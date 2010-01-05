@@ -2223,7 +2223,6 @@ object F_Hitsugaya: TF_Hitsugaya
     Height = 169
     Color = 12582911
     ItemHeight = 13
-    Sorted = True
     TabOrder = 4
     OnClick = L_SoftwareClick
     OnKeyDown = L_SoftwareKeyDown
@@ -2253,7 +2252,6 @@ object F_Hitsugaya: TF_Hitsugaya
     Height = 169
     Color = 12582911
     ItemHeight = 13
-    Sorted = True
     TabOrder = 6
     OnClick = L_CandidatesClick
     OnKeyDown = L_CandidatesKeyDown
