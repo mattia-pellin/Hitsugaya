@@ -125,6 +125,7 @@ begin
   SetLength(SwList, 0);
   repeat
     // Controllo che non sia già presente
+    Found:= False;
     Test:= THitSoft.Create(Res.Name);
     for r := 0 to Length(SwList) - 1 do
     begin
@@ -156,7 +157,7 @@ begin
 
     L_Software.Items.Add(SwList[i].Name);
     inc(i);
-  until FindNext(Res) <> 0;
+  until FindNext(Res) < 0;
   FindClose(Res);
 
   // Visualizzo il percorso corrente
@@ -321,6 +322,7 @@ procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
   i,j:            Word;
   Found:          Bool;
+  Element:        ShortString;
   HitInstallFile: TextFile;
 begin
   //1st Step -----

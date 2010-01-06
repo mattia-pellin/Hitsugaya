@@ -68,28 +68,15 @@ implementation
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.FormCreate(Sender: TObject);
 var
-    r:        Integer;
+    r:        LongWord;
     Drives:   array[0..128] of Char;
     uDrive:   array of Char;
     pDrive:   PChar;
 
     i:        Word;
     Res:      TSearchRec;
-    Test:     THitSoft;
-    Found,
-    ExtName:  Boolean;
+    Found:    Boolean;
 begin
-  if not(DirectoryExists('img')) then
-    begin
-      MessageDlg('Cartella \img non trovata', mtError, [mbClose], 0);
-      Halt(0);
-    end;
-  if FindFirst('config\*.bat', faAnyFile, Res) < 0 then
-    begin
-      MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
-      Exit;
-    end;
-
   SetLength(uDrive, 0);
   r := GetLogicalDriveStrings(SizeOf(Drives), Drives);
   if r <> 0 then
@@ -107,59 +94,37 @@ begin
 
   for r := 65 to 90 do
   begin
+    i:= 0;
     Found:= False;
-    for i := 0 to Length(uDrive) - 1 do
+    while (i < Length(uDrive)) and not(Found) do
+    begin
       if Chr(r) = uDrive[i] then
-      begin
         Found:= True;
-        break;
-      end;
+      inc(i);
+    end;
     if not(Found) then
       F_Hitsugaya.CB_Drive.Items.Add(Chr(r) + ':');
   end;
 
 
   i:= 0;
-  Found:= False;
-  ExtName:= False;
   SetLength(SwList, 0);
-  repeat
-    // Controllo che non sia già presente
-    Test:= THitSoft.Create(Res.Name);
-    for r := 0 to Length(SwList) - 1 do
+  Found:= False;
+  if not(FindFirst('config\*.bat', faAnyFile, Res) < 0) then
+    while not Found do
     begin
-      if SwList[r].Name = Test.Name then
-        if SwList[r].Name = Copy(Res.Name, 1, Length(Res.Name) - 4) then
-          begin
-            Found:= True;
-            break;
-          end
-        else
-          begin
-            ExtName:= True;
-            Found:= True;
-            break;
-          end;
-    end;
-    // Se il nome custom esite già, allora uso il nome del file
-    if not(Found) then
-      begin
-        SetLength(SwList, Length(SwList) + 1);
-        SwList[i]:= Test;
-      end
-    else if ExtName then
-      begin
-        SetLength(SwList, Length(SwList) + 1);
-        SwList[i]:= Test;
-        SwList[i].Name:= Copy(Res.Name, 1, Length(Res.Name) - 4);
-      end;
+      SetLength(SwList, Length(SwList) + 1);
+      SwList[i]:= THitSoft.Create(Res.Name);
 
-    L_Software.Items.Add(SwList[i].Name);
-    inc(i);
-  until FindNext(Res) <> 0;
+      L_Software.Items.Add(SwList[i].Name);
+
+      Found:= FindNext(Res) <> 0;
+      inc(i);
+    end;
+  if i = 1 then
+    MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
   FindClose(Res);
 
-  // Visualizzo il percorso corrente
   E_Path.Text:= GetCurrentDir();
 
   if L_Software.Count > 0 then
@@ -321,6 +286,7 @@ procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
   i,j:            Word;
   Found:          Bool;
+  Element:        ShortString;
   HitInstallFile: TextFile;
 begin
   //1st Step -----
