@@ -28,6 +28,7 @@ type
     L_Status2: TLabel;
     B_Start: TButton;
     CB_Drive: TComboBox;
+    IL_Hitsugaya: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
@@ -79,17 +80,25 @@ var
     Found,
     ExtName:  Boolean;
 begin
-  if not(DirectoryExists('img')) then
-    begin
-      MessageDlg('Cartella \img non trovata', mtError, [mbClose], 0);
-      Halt(0);
-    end;
+  // Checking software availability
   if FindFirst('config\*.bat', faAnyFile, Res) < 0 then
     begin
       MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
       Exit;
     end;
 
+  // Load images into components
+  IL_Hitsugaya.GetBitmap(0, B_Add.Glyph);
+  IL_Hitsugaya.GetBitmap(1, B_Remove.Glyph);
+  IL_Hitsugaya.GetBitmap(2, B_Up.Glyph);
+  IL_Hitsugaya.GetBitmap(3, B_Down.Glyph);
+  IL_Hitsugaya.GetBitmap(4, B_Info.Glyph);
+
+  IL_Hitsugaya.GetIcon(4, I_Check1.Picture.Icon);
+  IL_Hitsugaya.GetIcon(4, I_Check2.Picture.Icon);
+  // ---------------
+
+  // Create available drives list for mapping
   SetLength(uDrive, 0);
   r := GetLogicalDriveStrings(SizeOf(Drives), Drives);
   if r <> 0 then
@@ -117,13 +126,14 @@ begin
     if not(Found) then
       F_Hitsugaya.CB_Drive.Items.Add(Chr(r) + ':');
   end;
-
+  // ---------------
 
   i:= 0;
   Found:= False;
   ExtName:= False;
   SetLength(SwList, 0);
-  repeat
+  while FindNext(Res) = 0 do
+  begin
     // Controllo che non sia già presente
     Test:= THitSoft.Create(Res.Name);
     for r := 0 to Length(SwList) - 1 do
@@ -156,7 +166,7 @@ begin
 
     L_Software.Items.Add(SwList[i].Name);
     inc(i);
-  until FindNext(Res) <> 0;
+  end;
   FindClose(Res);
 
   // Visualizzo il percorso corrente
