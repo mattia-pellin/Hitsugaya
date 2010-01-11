@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>2009/12/24 11:35:50.704.pas,C:\Users\Mattia.IBS\Documents\RAD Studio\Projects\Unit1.pas=C:\Users\Mattia.IBS\Desktop\Projects\Hitsugaya\U_Hitsugaya.pas</Transaction>
-    <Transaction>2009/12/24 11:35:50.704.dfm,C:\Users\Mattia.IBS\Documents\RAD Studio\Projects\Unit1.dfm=C:\Users\Mattia.IBS\Desktop\Projects\Hitsugaya\U_Hitsugaya.dfm</Transaction>
-    <Transaction>2009/12/24 11:35:57.369.dproj,C:\Users\Mattia.IBS\Documents\RAD Studio\Projects\Project1.dproj=C:\Users\Mattia.IBS\Desktop\Projects\Hitsugaya\P_Hitsugaya.dproj</Transaction>
-    <Transaction>2009/12/28 10:27:57.466.pas,C:\Users\Mattia.IBS\Desktop\Projects\Hitsugaya\Unit1.pas=C:\Users\Mattia.IBS\Desktop\Projects\Hitsugaya\U_Classes.pas</Transaction>
-  </Transactions>
-</BorlandProject>
