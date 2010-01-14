@@ -7,7 +7,7 @@
 # Custom rules:
 *~
 *.bat
-*.res
+*.xml
 *.local
 *.identcache
 __history/* # Wil exclude delphi history dir

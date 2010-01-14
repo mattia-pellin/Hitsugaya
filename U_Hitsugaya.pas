@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, jpeg, ExtCtrls, ComCtrls, U_Classes, Buttons, pngimage, ShellApi,
-  ImgList;
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, U_Classes, Buttons, ShellApi,
+  ImgList, XMLDoc, XMLIntf, jpeg;
 
 type
     TF_Hitsugaya = class(TForm)
@@ -42,6 +42,7 @@ type
     procedure B_InfoClick(Sender: TObject);
     procedure L_SoftwareClick(Sender: TObject);
     procedure B_StartClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -58,52 +59,34 @@ implementation
 
 // PROCEDURES & FUNCTIONS
 // -----------------------------------------------------------------------------
+procedure LoadIcons();
+begin
+  with F_Hitsugaya do
+  begin
+    IL_Hitsugaya.GetBitmap(0, B_Add.Glyph);
+    IL_Hitsugaya.GetBitmap(1, B_Remove.Glyph);
+    IL_Hitsugaya.GetBitmap(2, B_Up.Glyph);
+    IL_Hitsugaya.GetBitmap(3, B_Down.Glyph);
+    IL_Hitsugaya.GetBitmap(4, B_Info.Glyph);
 
-{empty}
+    IL_Hitsugaya.GetIcon(4, I_Check1.Picture.Icon);
+    IL_Hitsugaya.GetIcon(4, I_Check2.Picture.Icon);
+  end;
+end;
 
-// -----------------------------------------------------------------------------
-
-
-
-// INITIAL SETTINGS
-// -----------------------------------------------------------------------------
-procedure TF_Hitsugaya.FormCreate(Sender: TObject);
+procedure CreateFreeDriveList();
 var
-    r:        Integer;
+    i,j:      Integer;
+    Found:    Boolean;
     Drives:   array[0..128] of Char;
     uDrive:   array of Char;
     pDrive:   PChar;
-
-    i:        Word;
-    Res:      TSearchRec;
-    Test:     THitSoft;
-    Found,
-    ExtName:  Boolean;
 begin
-  // Checking software availability
-  if FindFirst('config\*.bat', faAnyFile, Res) < 0 then
-    begin
-      MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
-      Exit;
-    end;
-
-  // Load images into components
-  IL_Hitsugaya.GetBitmap(0, B_Add.Glyph);
-  IL_Hitsugaya.GetBitmap(1, B_Remove.Glyph);
-  IL_Hitsugaya.GetBitmap(2, B_Up.Glyph);
-  IL_Hitsugaya.GetBitmap(3, B_Down.Glyph);
-  IL_Hitsugaya.GetBitmap(4, B_Info.Glyph);
-
-  IL_Hitsugaya.GetIcon(4, I_Check1.Picture.Icon);
-  IL_Hitsugaya.GetIcon(4, I_Check2.Picture.Icon);
-  // ---------------
-
-  // Create available drives list for mapping
   SetLength(uDrive, 0);
-  r := GetLogicalDriveStrings(SizeOf(Drives), Drives);
-  if r <> 0 then
+  i := GetLogicalDriveStrings(SizeOf(Drives), Drives);
+  if i <> 0 then
   begin
-    if r > SizeOf(Drives) then
+    if i > SizeOf(Drives) then
       raise Exception.Create(SysErrorMessage(ERROR_OUTOFMEMORY));
     pDrive := Drives;
     while pDrive^ <> #0 do
@@ -114,32 +97,45 @@ begin
     end;
   end;
 
-  for r := 65 to 90 do
+  for i := 65 to 90 do
   begin
     Found:= False;
-    for i := 0 to Length(uDrive) - 1 do
-      if Chr(r) = uDrive[i] then
+    for j := 0 to Length(uDrive) - 1 do
+      if Chr(i) = uDrive[j] then
       begin
         Found:= True;
         break;
       end;
     if not(Found) then
-      F_Hitsugaya.CB_Drive.Items.Add(Chr(r) + ':');
+      F_Hitsugaya.CB_Drive.Items.Add(Chr(i) + ':');
   end;
-  // ---------------
 
+  if F_Hitsugaya.CB_Drive.Items.Count > 0 then
+    F_Hitsugaya.CB_Drive.ItemIndex:= F_Hitsugaya.CB_Drive.Items.Count - 1;
+end;
+
+procedure BuildSoftwareList();
+var
+    i,j:      Word;
+    Res:      TSearchRec;
+    Test:     THitSoft;
+    Found,
+    ExtName:  Boolean;
+begin
   i:= 0;
   Found:= False;
   ExtName:= False;
   SetLength(SwList, 0);
+  FindFirst('config\*.bat', faAnyFile, Res);
+
   while FindNext(Res) = 0 do
   begin
-    // Controllo che non sia già presente
+    // Checking if already existing
     Test:= THitSoft.Create(Res.Name);
-    for r := 0 to Length(SwList) - 1 do
+    for j := 0 to Length(SwList) - 1 do
     begin
-      if SwList[r].Name = Test.Name then
-        if SwList[r].Name = Copy(Res.Name, 1, Length(Res.Name) - 4) then
+      if SwList[j].Name = Test.Name then
+        if SwList[j].Name = Copy(Res.Name, 1, Length(Res.Name) - 4) then
           begin
             Found:= True;
             break;
@@ -151,7 +147,7 @@ begin
             break;
           end;
     end;
-    // Se il nome custom esite già, allora uso il nome del file
+    // If custom name is busy, then use file name instead
     if not(Found) then
       begin
         SetLength(SwList, Length(SwList) + 1);
@@ -164,12 +160,69 @@ begin
         SwList[i].Name:= Copy(Res.Name, 1, Length(Res.Name) - 4);
       end;
 
-    L_Software.Items.Add(SwList[i].Name);
+    F_Hitsugaya.L_Software.Items.Add(SwList[i].Name);
     inc(i);
   end;
   FindClose(Res);
+end;
 
-  // Visualizzo il percorso corrente
+procedure SaveCurrentConfig(const FileName: String);
+var
+    Config:             TXmlDocument;
+    MainNode,           // Hitsugaya
+      MappingNode,      // Mapping
+        PathNode,       // Executing Path
+      SoftwareNode,
+        CandidatesNode: IXMLNode;
+begin
+  // Save current config into XML file
+  Config:= TXMLDocument.Create(nil);
+  Config.Active:= True;
+
+  MainNode:= Config.AddChild('program');
+    MappingNode:= MainNode.AddChild('mapping');
+
+    if F_Hitsugaya.CB_Mapping.Checked then
+      MappingNode.Attributes['active']:= true
+    else
+      MappingNode.Attributes['active']:= false;
+
+    MappingNode.Attributes['drive']:= F_Hitsugaya.CB_Drive.Items[F_Hitsugaya.CB_Drive.ItemIndex];
+      PathNode:= MappingNode.AddChild('path');
+      PathNode.Text:= F_Hitsugaya.E_Path.Text;
+
+    SoftwareNode:= MainNode.AddChild('software');
+      CandidatesNode:= SoftwareNode.AddChild('candidates');
+      CandidatesNode.Text:= 'prova';
+
+  Config.SaveToFile(FileName);
+end;
+// -----------------------------------------------------------------------------
+
+
+
+// INITIAL SETTINGS
+// -----------------------------------------------------------------------------
+procedure TF_Hitsugaya.FormCreate(Sender: TObject);
+var
+    i,j:      Word;
+    Res:      TSearchRec;
+begin
+  // Checking software availability
+  if FindFirst('config\*.bat', faAnyFile, Res) < 0 then
+    begin
+      MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
+      Exit;
+    end;
+  FindClose(res);
+
+  // Load images into components
+  LoadIcons();
+  // Create available drives list for mapping
+  CreateFreeDriveList();
+  // Build available software list
+  BuildSoftwareList();
+  // Show executing path
   E_Path.Text:= GetCurrentDir();
 
   if L_Software.Count > 0 then
@@ -180,7 +233,13 @@ begin
 end;
 // -----------------------------------------------------------------------------
 
-
+// FINAL OPERATIONS
+// -----------------------------------------------------------------------------
+procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SaveCurrentConfig('config.xml');
+end;
+// -----------------------------------------------------------------------------
 
 // MOVE BETWEEN LISTBOX ELEMENTS
 // -----------------------------------------------------------------------------
