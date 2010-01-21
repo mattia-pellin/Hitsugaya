@@ -59,6 +59,29 @@ implementation
 
 // PROCEDURES & FUNCTIONS
 // -----------------------------------------------------------------------------
+
+function GetVersion(sFileName:string): string;
+var
+  VerInfoSize: DWORD;
+  VerInfo: Pointer;
+  VerValueSize: DWORD;
+  VerValue: PVSFixedFileInfo;
+  Dummy: DWORD;
+begin
+  VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
+  GetMem(VerInfo, VerInfoSize);
+  GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
+  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+  with VerValue^ do
+  begin
+    Result := IntToStr(dwFileVersionMS shr 16);
+    Result := Result + '.' + IntToStr(dwFileVersionMS and $FFFF);
+    Result := Result + '.' + IntToStr(dwFileVersionLS shr 16);
+    Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
+  end;
+  FreeMem(VerInfo, VerInfoSize);
+end;
+
 procedure LoadIcons();
 begin
   with F_Hitsugaya do
@@ -236,8 +259,17 @@ end;
 // FINAL OPERATIONS
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
+var vFile: TextFile;
 begin
   SaveCurrentConfig('config.xml');
+
+  if FileExists('P_Hitsugaya.exe') then
+  begin
+    AssignFile(vFile, 'version');
+    Rewrite(vFile);
+    Write(vFile, GetVersion('P_Hitsugaya.exe'));
+    CloseFile(vFile);
+  end;
 end;
 // -----------------------------------------------------------------------------
 
