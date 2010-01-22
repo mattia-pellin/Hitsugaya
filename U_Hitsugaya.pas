@@ -232,7 +232,10 @@ var
     Res:      TSearchRec;
 begin
   // Checking software availability
-  if FindFirst('config\*.bat', faAnyFile, Res) < 0 then
+  if (FindFirst('config\*.bat', faAnyFile, Res) < 0)
+      or
+      not(DirectoryExists('config'))
+  then
     begin
       MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
       Exit;
@@ -261,7 +264,7 @@ end;
 procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
 var vFile: TextFile;
 begin
-  SaveCurrentConfig('config.xml');
+  //SaveCurrentConfig('config.xml');
 
   if FileExists('P_Hitsugaya.exe') then
   begin
@@ -418,13 +421,15 @@ end;
 
 
 
+// FINAL BATCH CREATION
+// -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
   i,j:            Word;
   Found:          Bool;
   HitInstallFile: TextFile;
 begin
-  //1st Step -----
+  // 1st Step -----
   I_Check1.Visible:= True;
   L_Status1.Visible:= True;
   L_Status1.Font.Style:= L_Status1.Font.Style + [fsBold];
@@ -434,6 +439,12 @@ begin
   Writeln(HitInstallFile, '@echo off');
   Writeln(HitInstallFile, 'cls');
   Writeln(HitInstallFile, 'echo Hitsugaya installation Batch');
+  Writeln(HitInstallFile, 'echo ----------');
+
+  // Remove *.exe authorization prompt
+  Writeln(HitInstallFile, 'Abilitazione Esecuzione file exe...');
+  Writeln(HitInstallFile, 'REG IMPORT tools\EnableRemoteExe.reg');
+  Writeln(HitInstallFile, 'gpupdate /force');
   Writeln(HitInstallFile, 'echo ----------');
 
   if CB_Mapping.Checked then
@@ -462,22 +473,29 @@ begin
       Writeln(HitInstallFile, 'echo ----------');
     end;
   end;
+
+  // Re-enable remote exe authorization prompt
+  Writeln(HitInstallFile, 'Ripristino protezioni file exe...');
+  Writeln(HitInstallFile, 'REG DELETE HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations /f');
+  Writeln(HitInstallFile, 'gpupdate /force');
+  Writeln(HitInstallFile, 'echo ----------');
+
   Writeln(HitInstallFile, 'pause');
 
   CloseFile(HitInstallFile);
-  I_Check1.Picture.LoadFromFile('img\check.png');
+  IL_Hitsugaya.GetIcon(5, I_Check1.Picture.Icon);
   L_Status1.Caption:= L_Status1.Caption + ' OK';
   L_Status1.Font.Style:= L_Status1.Font.Style - [fsBold];
   //----------
 
-  //2nd Step -----
+  // 2nd Step -----
   I_Check2.Visible:= True;
   L_Status2.Visible:= True;
   L_Status2.Font.Style:= L_Status2.Font.Style + [fsBold];
 
   ShellExecute(Handle, 'open', 'config\install\install.bat', nil, nil, SW_SHOWNORMAL);
 
-  I_Check2.Picture.LoadFromFile('img\check.png');
+  IL_Hitsugaya.GetIcon(5, I_Check2.Picture.Icon);
   L_Status2.Caption:= L_Status2.Caption + ' OK';
   L_Status2.Font.Style:= L_Status2.Font.Style - [fsBold];
   //----------
@@ -485,6 +503,7 @@ begin
   Sleep(3000);
   F_Hitsugaya.Close;
 end;
+// -----------------------------------------------------------------------------
 
 
 

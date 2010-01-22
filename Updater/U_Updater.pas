@@ -153,7 +153,7 @@ begin
 
       // Close Updater
       if FileExists('Hitsugaya.exe') then
-        //ShellExecute(F_Updater.Handle, 'open', 'Hitsugaya.exe', nil, nil, SW_SHOWNORMAL)
+        ShellExecute(F_Updater.Handle, 'open', 'Hitsugaya.exe', nil, nil, SW_SHOWNORMAL)
       else
         MessageDlg('Unable to find Hitsugaya.exe. Please Retry', mtError, [mbOK], 0);
       Application.Terminate;
