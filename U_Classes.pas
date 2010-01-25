@@ -3,41 +3,99 @@ unit U_Classes;
 interface
 
 uses
-  SysUtils;
+  SysUtils, Variants;
 
 type
   THitSoft = Class
 
   public
     Name,
-    Params,
-    Version: ShortString;
+    Version,
+    Category: ShortString;
+    Commands: array of ShortString;
+    IsValid:  Boolean;
 
-    constructor Create(F_Name: ShortString); overload;
+    constructor Create(bFileName: ShortString; SoftList: array of THitSoft); overload;
   End;
 
 implementation
 
-  constructor THitSoft.Create(F_Name: ShortString);
-  var
-    HitComFile: TextFile;
-    Buffer:     ShortString;
+  function IsNameInto(sName: ShortString; SoftList: array of THitSoft): Boolean;
+  var i: Word;
   begin
-    if FileExists('Config\' + F_Name) then
+    Result:= False;
+    for i := 0 to Length(SoftList) - 1 do
+      if SoftList[i].Name = sName then
+        begin
+          Result:= True;
+          break;
+        end;
+  end;
+
+  // IMPORTANT:
+  // Batch files format MUST be as following:
+  // ----------------------------------------
+  // ::ProgramName
+  // ::ProgramVersion
+  // ::ProgramCategory
+  // filepath\executable /switch
+  // filepath\executable /switch (in sequence)
+  // ... (as many times you want)
+  // end (no new line at the EOF)
+  // ----------------------------------------
+
+  constructor THitSoft.Create(bFileName: ShortString; SoftList: array of THitSoft);
+  var
+    Row:   ShortString;
+    bFile: TextFile;
+  begin
+    if FileExists('Config\' + bFileName) then
       begin
-        AssignFile(HitComFile, 'Config\' + F_Name);
-        Reset(HitComFile);
+        AssignFile(bFile, 'Config\' + bFileName);
+        Reset(bFile);
 
-        ReadLn(HitComFile, Buffer);
-        Name:= Copy(Buffer, 3, Length(Buffer));
-        ReadLn(HitComFile, Buffer);
-        Version:= 'v' + Copy(Buffer, 3, Length(Buffer));
-        ReadLn(HitComFile, Params);
+        // Read FileName
+        Readln(bFile, Row);
+        Delete(Row, 1, 2);
+        Trim(Row);
+        if (Row <> '') and IsNameInto(Row, SoftList) then
+          Name:= Copy(bFileName, 1, Length(bFileName) - 4)
+        else
+          Name:= Row;
 
-        CloseFile(HitComFile);
-      end;
-    if Name = '' then
-      Name:= Copy(F_Name, 1, Length(F_Name) - 4);
+        // Read FileVersion
+        Readln(bFile, Row);
+        Delete(Row, 1, 2);
+        Trim(Row);
+        if Row <> '' then
+          Version:= 'v' + Row
+        else
+          Version:= Null;
+
+        // Read FileCategory
+        Readln(bFile, Row);
+        Delete(Row, 1, 2);
+        Trim(Row);
+        if Row <> '' then
+          Category:= Row
+        else
+          Category:= Null;
+
+        SetLength(Commands, 0);
+        while not(Eof(bFile)) do
+        begin
+          // Read every command
+          Readln(bFile, Row);
+          Trim(Row);
+          if Row <> '' then
+            begin
+              SetLength(Commands, Length(Commands) + 1);
+              Commands[Length(Commands)]:= Row;
+            end;
+        end;
+        if Length(Commands) = 0 then
+          IsValid:= False;
+    end;
   end;
 
 end.

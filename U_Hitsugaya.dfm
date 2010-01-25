@@ -3,7 +3,7 @@ object F_Hitsugaya: TF_Hitsugaya
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'Hitsugaya v1.0a'
-  ClientHeight = 433
+  ClientHeight = 456
   ClientWidth = 313
   Color = clHotLight
   DoubleBuffered = True
@@ -1836,7 +1836,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object I_Check1: TImage
     Left = 16
-    Top = 350
+    Top = 375
     Width = 20
     Height = 20
     Constraints.MaxHeight = 20
@@ -1847,7 +1847,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object L_Status1: TLabel
     Left = 42
-    Top = 353
+    Top = 378
     Width = 126
     Height = 16
     Caption = 'Composizione Batch...'
@@ -1863,7 +1863,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object I_Check2: TImage
     Left = 16
-    Top = 375
+    Top = 400
     Width = 20
     Height = 20
     Constraints.MaxHeight = 20
@@ -1874,7 +1874,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object L_Status2: TLabel
     Left = 42
-    Top = 377
+    Top = 402
     Width = 134
     Height = 16
     Caption = 'Esecuzione File Batch...'
@@ -1939,21 +1939,21 @@ object F_Hitsugaya: TF_Hitsugaya
     Height = 17
     TabOrder = 3
   end
-  object L_Software: TListBox
+  object LB_Software: TListBox
     Left = 8
-    Top = 152
+    Top = 177
     Width = 129
     Height = 169
     Color = 12582911
     ItemHeight = 13
     Sorted = True
     TabOrder = 4
-    OnClick = L_SoftwareClick
-    OnKeyDown = L_SoftwareKeyDown
+    OnClick = LB_SoftwareClick
+    OnKeyDown = LB_SoftwareKeyDown
   end
   object P_Status: TPanel
     Left = 8
-    Top = 327
+    Top = 352
     Width = 297
     Height = 17
     Caption = 'Status'
@@ -1969,21 +1969,21 @@ object F_Hitsugaya: TF_Hitsugaya
     ParentFont = False
     TabOrder = 5
   end
-  object L_Candidates: TListBox
+  object LB_Candidates: TListBox
     Left = 176
-    Top = 152
+    Top = 177
     Width = 129
     Height = 169
     Color = 12582911
     ItemHeight = 13
     Sorted = True
     TabOrder = 6
-    OnClick = L_CandidatesClick
-    OnKeyDown = L_CandidatesKeyDown
+    OnClick = LB_CandidatesClick
+    OnKeyDown = LB_CandidatesKeyDown
   end
   object B_Add: TBitBtn
     Left = 143
-    Top = 152
+    Top = 177
     Width = 27
     Height = 27
     Cursor = crHandPoint
@@ -2003,7 +2003,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Remove: TBitBtn
     Left = 143
-    Top = 185
+    Top = 210
     Width = 27
     Height = 27
     Cursor = crHandPoint
@@ -2023,7 +2023,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Info: TBitBtn
     Left = 143
-    Top = 223
+    Top = 248
     Width = 27
     Height = 27
     Cursor = crHandPoint
@@ -2043,7 +2043,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Up: TBitBtn
     Left = 143
-    Top = 261
+    Top = 286
     Width = 27
     Height = 27
     Cursor = crHandPoint
@@ -2057,7 +2057,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Down: TBitBtn
     Left = 143
-    Top = 294
+    Top = 319
     Width = 27
     Height = 27
     Cursor = crHandPoint
@@ -2071,7 +2071,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Start: TButton
     Left = 8
-    Top = 402
+    Top = 427
     Width = 297
     Height = 25
     Caption = 'Start!'
@@ -2093,13 +2093,21 @@ object F_Hitsugaya: TF_Hitsugaya
     Color = 12582911
     TabOrder = 13
   end
+  object CB_Category: TComboBox
+    Left = 8
+    Top = 150
+    Width = 297
+    Height = 21
+    Color = 16777190
+    TabOrder = 14
+  end
   object IL_Hitsugaya: TImageList
     DrawingStyle = dsTransparent
     ShareImages = True
     Left = 260
-    Top = 355
+    Top = 380
     Bitmap = {
-      494C010106000800240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010106000800340010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000A6A6A6ABD5D5D5FFE9E7E7FFDEDCDCFFD5D5D5FFA6A6A6AB0000
