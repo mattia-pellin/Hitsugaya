@@ -3,7 +3,7 @@ unit U_Classes;
 interface
 
 uses
-  SysUtils, Variants;
+  Classes, SysUtils, Variants;
 
 type
   THitSoft = Class
@@ -20,8 +20,33 @@ type
 
 implementation
 
+  // Porting of VB Split function
+  function Split(StrBuf,Delimiter: string): TStringList;
+  var
+    MyStrList: TStringList;
+    TmpBuf:    String;
+    LoopCount: Integer;
+  begin
+    MyStrList := TStringList.Create;
+    LoopCount := 1;
+
+    repeat
+      if StrBuf[LoopCount] = Delimiter then
+      begin
+        MyStrList.Add(TmpBuf);
+        TmpBuf := '';
+      end;
+
+      TmpBuf := TmpBuf + StrBuf[LoopCount];
+      inc(LoopCount);
+    until LoopCount > Length(StrBuf);
+    MyStrList.Add(Trim(TmpBuf));
+
+    Result := MyStrList;
+  end;
+
   function IsNameInto(sName: ShortString; SoftList: array of THitSoft): Boolean;
-  var i: Word;
+  var i: Integer;
   begin
     Result:= False;
     for i := 0 to Length(SoftList) - 1 do
@@ -47,6 +72,7 @@ implementation
   constructor THitSoft.Create(bFileName: ShortString; SoftList: array of THitSoft);
   var
     Row:   ShortString;
+    sFile: TStringList;
     bFile: TextFile;
   begin
     if FileExists('Config\' + bFileName) then
@@ -89,12 +115,20 @@ implementation
           Trim(Row);
           if Row <> '' then
             begin
-              SetLength(Commands, Length(Commands) + 1);
-              Commands[Length(Commands)]:= Row;
+              sFile:= TStringList.Create;
+              sFile:= Split(Row, ' ');
+              if FileExists('config\' + sFile[0]) then
+                begin
+                  SetLength(Commands, Length(Commands) + 1);
+                  Commands[Length(Commands) - 1]:= Row;
+                end;
+              sFile.Free;
             end;
         end;
         if Length(Commands) = 0 then
-          IsValid:= False;
+          IsValid:= False
+        else
+          IsValid:= True;
     end;
   end;
 

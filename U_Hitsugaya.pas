@@ -141,6 +141,7 @@ begin
     LB_Software.ItemIndex:= 0;
     B_Add.Enabled:= True;
   end;
+  LB_SoftwareClick(Sender);
 end;
 // -----------------------------------------------------------------------------
 
@@ -324,7 +325,10 @@ begin
   L_Status1.Font.Style:= L_Status1.Font.Style + [fsBold];
 
   AssignFile(HitInstallFile, 'config\install\install.bat');
+  if not(DirectoryExists('config\install')) then
+    CreateDir('config\install');
   Rewrite(HitInstallFile);
+
   Writeln(HitInstallFile, '@echo off');
   Writeln(HitInstallFile, 'color 0A');
   Writeln(HitInstallFile, 'cls');
@@ -332,7 +336,7 @@ begin
   Writeln(HitInstallFile, 'echo ----------');
 
   // Remove *.exe authorization prompt
-  Writeln(HitInstallFile, 'Abilitazione Esecuzione file exe...');
+  Writeln(HitInstallFile, 'echo Abilitazione Esecuzione file exe...');
   Writeln(HitInstallFile, 'REG IMPORT tools\EnableRemoteExe.reg');
   Writeln(HitInstallFile, 'gpupdate /force');
   Writeln(HitInstallFile, 'echo ----------');
