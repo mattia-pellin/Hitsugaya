@@ -1,7 +1,7 @@
 ::Nome corretto del programma
 ::Versione del programma
 ::Categoria del programma
-Install\altre cartelle\eseguibile1.exe /SilentSwitch
-Install\altre cartelle\eseguibile2.exe /SilentSwitch
-Install\altre cartelle\eseguibile3.exe /SilentSwitch
+install\altre cartelle\eseguibile1.exe /SilentSwitch
+install\altre cartelle\eseguibile2.exe /SilentSwitch
+install\altre cartelle\eseguibile3.exe /SilentSwitch
 ...

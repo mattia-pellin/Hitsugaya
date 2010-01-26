@@ -11,14 +11,29 @@ type
   public
     Name,
     Version,
-    Category: ShortString;
-    Commands: array of ShortString;
+    Category: String;
+    Commands: array of String;
     IsValid:  Boolean;
 
-    constructor Create(bFileName: ShortString; SoftList: array of THitSoft); overload;
+    constructor Create(bFileName: String; SoftList: array of THitSoft); overload;
   End;
 
+  function Split(StrBuf, Delimiter: String): TStringList;
+  function HitSoftFind(sName: String; SoftList: array of THitSoft): Integer;
+
 implementation
+
+  function HitSoftFind(sName: String; SoftList: array of THitSoft): Integer;
+  var i: Integer;
+  begin
+    Result:= -1;
+    for i := 0 to Length(SoftList) - 1 do
+      if SoftList[i].Name = sName then
+        begin
+          Result:= i;
+          break;
+        end;
+  end;
 
   // Porting of VB Split function
   function Split(StrBuf,Delimiter: string): TStringList;
@@ -45,17 +60,7 @@ implementation
     Result := MyStrList;
   end;
 
-  function IsNameInto(sName: ShortString; SoftList: array of THitSoft): Boolean;
-  var i: Integer;
-  begin
-    Result:= False;
-    for i := 0 to Length(SoftList) - 1 do
-      if SoftList[i].Name = sName then
-        begin
-          Result:= True;
-          break;
-        end;
-  end;
+
 
   // IMPORTANT:
   // Batch files format MUST be as following:
@@ -69,9 +74,9 @@ implementation
   // end (no new line at the EOF)
   // ----------------------------------------
 
-  constructor THitSoft.Create(bFileName: ShortString; SoftList: array of THitSoft);
+  constructor THitSoft.Create(bFileName: String; SoftList: array of THitSoft);
   var
-    Row:   ShortString;
+    Row:   String;
     sFile: TStringList;
     bFile: TextFile;
   begin
@@ -84,7 +89,7 @@ implementation
         Readln(bFile, Row);
         Delete(Row, 1, 2);
         Trim(Row);
-        if (Row <> '') and IsNameInto(Row, SoftList) then
+        if (Row <> '') and (HitSoftFind(Row, SoftList) <> -1) then
           Name:= Copy(bFileName, 1, Length(bFileName) - 4)
         else
           Name:= Row;
@@ -115,7 +120,6 @@ implementation
           Trim(Row);
           if Row <> '' then
             begin
-              sFile:= TStringList.Create;
               sFile:= Split(Row, ' ');
               if FileExists('config\' + sFile[0]) then
                 begin

@@ -9,6 +9,7 @@ type SWList = array of THitSoft;
 function GetFileVer(sFileName:string): String;
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
 procedure CreateFreeDriveList(var CB_Drives: TComboBox);
+procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
 
 implementation
 
@@ -44,19 +45,32 @@ begin
   SetLength(Result, 0);
   FindFirst('config\*.bat', faAnyFile, Res);
 
-  while FindNext(Res) = 0 do
-  begin
+  repeat
     Test:= THitSoft.Create(Res.Name, Result);
     if Test.IsValid then
       begin
         SetLength(Result, Length(Result) + 1);
-        Result[Length(Result)]:= Test;
+        Result[Length(Result) - 1]:= Test;
         LB_Soft.Items.Add(Test.Name);
       end
     else
       MessageDlg('Formato del file ' + Res.Name + ' invalido', mtWarning, [mbOK], 0);
-  end;
+  until FindNext(Res) <> 0;
   FindClose(Res);
+end;
+
+// Create available catagory list
+procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
+var i: Integer;
+begin
+  Categories.Items.Add('Tutte le Categorie');
+
+  for i := 0 to Length(Software) - 1 do
+    if Categories.Items.IndexOf(Software[i].Category) = -1 then
+      Categories.Items.Add(Software[i].Category);
+
+  if Categories.Items.Count > 0 then
+    Categories.ItemIndex:= 0;
 end;
 
 // Put free drive list into ComboBox

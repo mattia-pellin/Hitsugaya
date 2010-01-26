@@ -44,6 +44,8 @@ type
     procedure LB_SoftwareClick(Sender: TObject);
     procedure B_StartClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure CB_CategoryChange(Sender: TObject);
+    procedure CB_CategoryKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   public
@@ -60,7 +62,6 @@ implementation
 
 // PROCEDURES & FUNCTIONS
 // -----------------------------------------------------------------------------
-
 procedure LoadIcons();
 begin
   with F_Hitsugaya do
@@ -133,6 +134,8 @@ begin
   CreateFreeDriveList(CB_Drive);
   // Build available software list
   SwList:= BuildSoftwareList(LB_Software);
+  // Build available categories list
+  BuildCategoryList(SwList, CB_Category);
   // Show executing path
   E_Path.Text:= GetCurrentDir();
 
@@ -219,7 +222,7 @@ end;
 // MOVE CANDIDATES LISTBOX ELEMENTS UP & DOWN
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_UpClick(Sender: TObject);
-var S: ShortString;
+var S: String;
 begin
   S:= LB_Candidates.Items[LB_Candidates.ItemIndex - 1];
   LB_Candidates.Items[LB_Candidates.ItemIndex - 1]:= LB_Candidates.Items[LB_Candidates.ItemIndex];
@@ -230,7 +233,7 @@ begin
 end;
 
 procedure TF_Hitsugaya.B_DownClick(Sender: TObject);
-var S: ShortString;
+var S: String;
 begin
   S:= LB_Candidates.Items[LB_Candidates.ItemIndex + 1];
   LB_Candidates.Items[LB_Candidates.ItemIndex + 1]:= LB_Candidates.Items[LB_Candidates.ItemIndex];
@@ -243,14 +246,8 @@ end;
 
 
 
-procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
-begin
-  MessageDlg(SwList[LB_Software.ItemIndex].Version, mtInformation, [mbOK], 0);
-end;
 
-
-
-// KEYBOARD CONTROLS SETTINGS
+// MOUSE & KEYBOARD CONTROLS SETTINGS
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.LB_CandidatesClick(Sender: TObject);
 begin
@@ -307,6 +304,30 @@ begin
   LB_SoftwareClick(Sender);
   LB_CandidatesClick(Sender);
 end;
+
+procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
+begin
+  MessageDlg(SwList[LB_Software.ItemIndex].Version, mtInformation, [mbOK], 0);
+end;
+
+procedure TF_Hitsugaya.CB_CategoryChange(Sender: TObject);
+var i: Integer;
+begin
+  LB_Software.Items.Clear;
+  for i := 0 to Length(SwList) - 1 do
+    if (SwList[i].Category = CB_Category.Items[CB_Category.ItemIndex])
+        or
+       (CB_Category.ItemIndex = 0)
+    then
+      LB_Software.Items.Add(SwList[i].Name);
+end;
+
+// Disallow user to manually modify current category
+procedure TF_Hitsugaya.CB_CategoryKeyPress(Sender: TObject; var Key: Char);
+begin
+  Key:= #0;
+end;
+
 // -----------------------------------------------------------------------------
 
 
@@ -315,7 +336,7 @@ end;
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
-  i,j,k:          Word;
+  i,j,k:          Integer;
   Found:          Bool;
   HitInstallFile: TextFile;
 begin
@@ -350,23 +371,16 @@ begin
 
   for j:= 0 to (LB_Candidates.Count - 1) do
   begin
-    i:= 0;
-    Found:= False;
-    while (i < LB_Software.Count) and not(Found) do
-    begin
-      if LB_Software.Items[i] = LB_Candidates.Items[j] then
-        Found:= True;
-      inc(i);
-    end;
+    i:= HitSoftFind(LB_Candidates.Items[j], SwList);
 
-    if Found then
+    if i <> -1 then
     begin
       Writeln(HitInstallFile, 'echo Installazione ' + IntToStr(j + 1) + ' di ' + IntToStr(LB_Candidates.Count) + ' in corso...');
-      Writeln(HitInstallFile, 'echo Installazione di ' + SwList[i - 1].Name + '...');
-      for k := 0 to Length(SwList[i - 1].Commands) - 1 do
+      Writeln(HitInstallFile, 'echo Installazione di ' + SwList[i].Name + '...');
+      for k := 0 to Length(SwList[i].Commands) - 1 do
       begin
-        Writeln(HitInstallFile, 'echo   Esecuzione comando ' + IntToStr(k + 1) + ' di ' + IntToStr(Length(SwList[i - 1].Commands)) + '...');
-        Writeln(HitInstallFile, 'start /wait config\' + SwList[i - 1].Commands[k]);
+        Writeln(HitInstallFile, 'echo   Esecuzione comando ' + IntToStr(k + 1) + ' di ' + IntToStr(Length(SwList[i].Commands)) + '...');
+        Writeln(HitInstallFile, 'start /wait config\' + SwList[i].Commands[k]);
       end;
       Writeln(HitInstallFile, 'echo ----------');
     end;
@@ -402,7 +416,6 @@ begin
   F_Hitsugaya.Close;
 end;
 // -----------------------------------------------------------------------------
-
 
 
 end.
