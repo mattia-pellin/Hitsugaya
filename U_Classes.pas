@@ -158,6 +158,7 @@ implementation
               sFile.Free;
             end;
         end;
+        CloseFile(bFile);
         if Length(Commands) = 0 then
           IsValid:= False
         else

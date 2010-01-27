@@ -3,8 +3,8 @@ unit U_Hitsugaya;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, ShellApi,
+  Windows, SysUtils, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, Buttons, ShellApi,
   ImgList, XMLDoc, XMLIntf, jpeg, U_Classes, U_ExtProcFunc;
 
 type
