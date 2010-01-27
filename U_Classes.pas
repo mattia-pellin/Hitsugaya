@@ -121,7 +121,10 @@ implementation
           if Row <> '' then
             begin
               sFile:= Split(Row, ' ');
-              if FileExists('config\' + sFile[0]) then
+              if FileExists('config\' + sFile[0])
+                 or
+                 ((sFile.Count > 1) and (FileExists('config\' + sFile[1])))
+              then
                 begin
                   SetLength(Commands, Length(Commands) + 1);
                   Commands[Length(Commands) - 1]:= Row;
