@@ -3,13 +3,14 @@ unit U_Classes;
 interface
 
 uses
-  Classes, SysUtils, Variants;
+  Windows, Classes, SysUtils, Variants;
 
 type
   THitSoft = Class
 
   public
     Name,
+    fName,
     Version,
     Category: String;
     Commands: array of String;
@@ -18,6 +19,7 @@ type
     constructor Create(bFileName: String; SoftList: array of THitSoft); overload;
   End;
 
+  function GetFileVer(sFileName:string): String;
   function Split(StrBuf, Delimiter: String): TStringList;
   function HitSoftFind(sName: String; SoftList: array of THitSoft): Integer;
 
@@ -33,6 +35,29 @@ implementation
           Result:= i;
           break;
         end;
+  end;
+
+  // Get version of a File
+  function GetFileVer(sFileName:string): String;
+  var
+    Dummy,
+    VerInfoSize,
+    VerValueSize: DWORD;
+    VerInfo:      Pointer;
+    VerValue:     PVSFixedFileInfo;
+  begin
+    VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
+    GetMem(VerInfo, VerInfoSize);
+    GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
+    VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+    with VerValue^ do
+    begin
+      Result := IntToStr(dwFileVersionMS shr 16);
+      Result := Result + '.' + IntToStr(dwFileVersionMS and $FFFF);
+      Result := Result + '.' + IntToStr(dwFileVersionLS shr 16);
+      Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
+    end;
+    FreeMem(VerInfo, VerInfoSize);
   end;
 
   // Porting of VB Split function
@@ -80,6 +105,7 @@ implementation
     sFile: TStringList;
     bFile: TextFile;
   begin
+    fName:= bFileName;
     if FileExists('Config\' + bFileName) then
       begin
         AssignFile(bFile, 'Config\' + bFileName);
@@ -101,7 +127,7 @@ implementation
         if Row <> '' then
           Version:= 'v' + Row
         else
-          Version:= Null;
+          Version:= GetFileVer('Config\' + bFileName);
 
         // Read FileCategory
         Readln(bFile, Row);

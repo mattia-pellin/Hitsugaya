@@ -307,7 +307,7 @@ end;
 
 procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
 begin
-  MessageDlg(SwList[LB_Software.ItemIndex].Version, mtInformation, [mbOK], 0);
+  MessageDlg(SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version, mtInformation, [mbOK], 0);
 end;
 
 procedure TF_Hitsugaya.CB_CategoryChange(Sender: TObject);
@@ -337,7 +337,6 @@ end;
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
   i,j,k:          Integer;
-  Found:          Bool;
   HitInstallFile: TextFile;
 begin
   // 1st Step -----

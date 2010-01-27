@@ -6,35 +6,11 @@ uses Windows, Dialogs, SysUtils, StdCtrls, U_Classes;
 
 type SWList = array of THitSoft;
 
-function GetFileVer(sFileName:string): String;
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
 procedure CreateFreeDriveList(var CB_Drives: TComboBox);
 procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
 
 implementation
-
-// Get version of a File
-function GetFileVer(sFileName:string): String;
-var
-  Dummy,
-  VerInfoSize,
-  VerValueSize: DWORD;
-  VerInfo:      Pointer;
-  VerValue:     PVSFixedFileInfo;
-begin
-  VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
-  GetMem(VerInfo, VerInfoSize);
-  GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
-  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
-  with VerValue^ do
-  begin
-    Result := IntToStr(dwFileVersionMS shr 16);
-    Result := Result + '.' + IntToStr(dwFileVersionMS and $FFFF);
-    Result := Result + '.' + IntToStr(dwFileVersionLS shr 16);
-    Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
-  end;
-  FreeMem(VerInfo, VerInfoSize);
-end;
 
 // Create available software list
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
