@@ -73,7 +73,7 @@ implementation
     repeat
       if StrBuf[LoopCount] = Delimiter then
       begin
-        MyStrList.Add(TmpBuf);
+        MyStrList.Add(Trim(TmpBuf));
         TmpBuf := '';
       end;
 
@@ -101,6 +101,7 @@ implementation
 
   constructor THitSoft.Create(bFileName: String; SoftList: array of THitSoft);
   var
+    i:     Integer;
     Row:   String;
     sFile: TStringList;
     bFile: TextFile;
@@ -127,7 +128,7 @@ implementation
         if Row <> '' then
           Version:= 'v' + Row
         else
-          Version:= GetFileVer('Config\' + bFileName);
+          Version:= '';
 
         // Read FileCategory
         Readln(bFile, Row);
@@ -147,18 +148,20 @@ implementation
           if Row <> '' then
             begin
               sFile:= Split(Row, ' ');
-              if FileExists('config\' + sFile[0])
-                 or
-                 ((sFile.Count > 1) and (FileExists('config\' + sFile[1])))
-              then
-                begin
-                  SetLength(Commands, Length(Commands) + 1);
-                  Commands[Length(Commands) - 1]:= Row;
-                end;
-              sFile.Free;
+              for i := 0 to sFile.Count - 1 do
+                if FileExists('config\' + sFile[i])
+                then
+                  begin
+                    if Version = '' then
+                      Version:= GetFileVer('config\' + sFile[i]);
+                    SetLength(Commands, Length(Commands) + 1);
+                    Commands[Length(Commands) - 1]:= Row;
+                  end;
+                sFile.Free;
             end;
         end;
         CloseFile(bFile);
+
         if Length(Commands) = 0 then
           IsValid:= False
         else
