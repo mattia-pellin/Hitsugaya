@@ -11,4 +11,6 @@
 *.local
 *.identcache
 config/install/*
-__history/* # Wil exclude delphi history dir
+__history/*      # Will exclude delphi history dir
+_config/*        # Used for tests
+_tools/*         # Used for tests

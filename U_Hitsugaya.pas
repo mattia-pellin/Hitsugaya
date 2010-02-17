@@ -386,7 +386,7 @@ begin
   end;
 
   // Re-enable remote exe authorization prompt
-  Writeln(HitInstallFile, 'Ripristino protezioni file exe...');
+  Writeln(HitInstallFile, 'echo Ripristino protezioni file exe...');
   Writeln(HitInstallFile, 'REG DELETE HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations /f');
   Writeln(HitInstallFile, 'gpupdate /force');
   Writeln(HitInstallFile, 'echo ----------');
