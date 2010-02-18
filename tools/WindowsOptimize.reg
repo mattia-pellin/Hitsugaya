@@ -1,0 +1,21 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsNT\CurrentVersion\Winlogon]
+"AutoRestartShell"=dword:00000001
+"PowerdownAfterShutdown"="1"
+"ShutdownWithoutLogon"="0"
+"allocatecdroms"="0"
+"allocatedasd"="0"
+"allocatefloppies"="0"
+"cachedlogonscount"="10"
+"forceunlocklogon"=dword:00000000
+"scremoveoption"="0"
+"AllowMultipleTSSessions"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control]
+"WaitToKillServiceTimeout"="800"
+
+[HKEY_CURRENT_USER\Control Panel\Desktop]
+"HungAppTimeout"="3000"
+"WaitToKillAppTimeout"="3000"
+"AutoEndTask"="1"

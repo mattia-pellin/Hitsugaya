@@ -379,7 +379,10 @@ begin
       for k := 0 to Length(SwList[i].Commands) - 1 do
       begin
         Writeln(HitInstallFile, 'echo   Esecuzione comando ' + IntToStr(k + 1) + ' di ' + IntToStr(Length(SwList[i].Commands)) + '...');
-        Writeln(HitInstallFile, 'start /wait config\' + SwList[i].Commands[k]);
+        if CB_Mapping.Checked then
+          Writeln(HitInstallFile, 'start /wait ' + CB_Drive.Items[CB_Drive.ItemIndex] + '\config\' + SwList[i].Commands[k])
+        else
+          Writeln(HitInstallFile, 'start /wait config\' + SwList[i].Commands[k]);
       end;
       Writeln(HitInstallFile, 'echo ----------');
     end;
@@ -389,6 +392,11 @@ begin
   Writeln(HitInstallFile, 'echo Ripristino protezioni file exe...');
   Writeln(HitInstallFile, 'REG DELETE HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations /f');
   Writeln(HitInstallFile, 'gpupdate /force');
+  Writeln(HitInstallFile, 'echo ----------');
+
+  // Modify windows registry to optimize startup/shutdown
+  Writeln(HitInstallFile, 'echo Ottimizzazione registro di sistema...');
+  Writeln(HitInstallFile, 'REG IMPORT tools\WindowsOptimize.reg');
   Writeln(HitInstallFile, 'echo ----------');
 
   Writeln(HitInstallFile, 'pause');
