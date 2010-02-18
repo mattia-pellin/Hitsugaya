@@ -336,6 +336,7 @@ end;
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
+  pw:             PWideChar;
   i,j,k:          Integer;
   HitInstallFile: TextFile;
 begin
@@ -355,18 +356,22 @@ begin
   Writeln(HitInstallFile, 'echo Hitsugaya installation Batch');
   Writeln(HitInstallFile, 'echo ----------');
 
-  // Remove *.exe authorization prompt
-  Writeln(HitInstallFile, 'echo Abilitazione Esecuzione file exe...');
-  Writeln(HitInstallFile, 'REG IMPORT tools\EnableRemoteExe.reg');
-  Writeln(HitInstallFile, 'gpupdate /force');
-  Writeln(HitInstallFile, 'echo ----------');
-
+  // Map remote path
   if CB_Mapping.Checked then
   begin
     Writeln(HitInstallFile, 'echo Mappatura di ' + E_Path.Text + ' in ' + CB_Drive.Items[CB_Drive.ItemIndex] + ' ...');
     Writeln(HitInstallFile, 'net use ' + CB_Drive.Items[CB_Drive.ItemIndex] + ' ' + E_Path.Text + ' /PERSISTENT:NO');
     Writeln(HitInstallFile, 'echo ----------');
   end;
+
+  // Remove *.exe authorization prompt
+  Writeln(HitInstallFile, 'echo Abilitazione Esecuzione file exe...');
+  if CB_Mapping.Checked then
+    Writeln(HitInstallFile, 'REG IMPORT ' + CB_Drive.Items[CB_Drive.ItemIndex] + '\tools\EnableRemoteExe.reg')
+  else
+    Writeln(HitInstallFile, 'REG IMPORT ' + E_Path.Text + '\tools\EnableRemoteExe.reg');
+  Writeln(HitInstallFile, 'gpupdate /force');
+  Writeln(HitInstallFile, 'echo ----------');
 
   for j:= 0 to (LB_Candidates.Count - 1) do
   begin
@@ -396,7 +401,10 @@ begin
 
   // Modify windows registry to optimize startup/shutdown
   Writeln(HitInstallFile, 'echo Ottimizzazione registro di sistema...');
-  Writeln(HitInstallFile, 'REG IMPORT tools\WindowsOptimize.reg');
+  if CB_Mapping.Checked then
+    Writeln(HitInstallFile, 'REG IMPORT ' + CB_Drive.Items[CB_Drive.ItemIndex] + '\tools\WindowsOptimize.reg')
+  else
+    Writeln(HitInstallFile, 'REG IMPORT ' + E_Path.Text + '\tools\WindowsOptimize.reg');
   Writeln(HitInstallFile, 'echo ----------');
 
   Writeln(HitInstallFile, 'pause');
@@ -412,7 +420,11 @@ begin
   L_Status2.Visible:= True;
   L_Status2.Font.Style:= L_Status2.Font.Style + [fsBold];
 
-  ShellExecute(Handle, 'open', 'config\install\install.bat', nil, nil, SW_SHOWNORMAL);
+  pw:= PWideChar(CB_Drive.Items[CB_Drive.ItemIndex] + '\config\install\install.bat');
+  if CB_Mapping.Checked then
+    ShellExecute(Handle, 'open', pw, nil, nil, SW_SHOWNORMAL)
+  else
+    ShellExecute(Handle, 'open', 'config\install\install.bat', nil, nil, SW_SHOWNORMAL);
 
   IL_Hitsugaya.GetIcon(5, I_Check2.Picture.Icon);
   L_Status2.Caption:= L_Status2.Caption + ' OK';
