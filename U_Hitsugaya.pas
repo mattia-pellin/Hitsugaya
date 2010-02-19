@@ -173,19 +173,20 @@ end;
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_AddClick(Sender: TObject);
 var i:      Word;
-    found:  Bool;
 begin
-  i:= 0;
-  found:= False;
-  while not(found) and (i < LB_Candidates.Count) do
-  begin
-    if LB_Candidates.Items[i] = LB_Software.Items[LB_Software.ItemIndex] then
-      found:= True;
-    inc(i);
-  end;
+  if LB_Software.ItemIndex = -1 then
+    Exit;
 
-  if not(found) then
-    LB_Candidates.Items.Add(LB_Software.Items[LB_Software.ItemIndex]);
+  // Impedisco la perdita della selezione
+  i:= LB_Software.ItemIndex - 1;
+
+  LB_Candidates.Items.Add(LB_Software.Items[LB_Software.ItemIndex]);
+  LB_Software.Items.Delete(LB_Software.ItemIndex);
+
+  // Impedisco la perdita della selezione
+  LB_Software.ItemIndex:= i;
+  if (LB_Software.ItemIndex = -1) and (LB_Software.Items.Count > 0) then
+    LB_Software.ItemIndex:= 0;
 
   // Sposto la selezione sul SW appena selezionato
   LB_Candidates.ItemIndex:= LB_Candidates.Count - 1;
@@ -199,8 +200,11 @@ begin
 end;
 
 procedure TF_Hitsugaya.B_RemoveClick(Sender: TObject);
-var tmp: Integer;
+var i, tmp: Integer;
 begin
+  if LB_Candidates.ItemIndex = -1 then
+    Exit;
+
   if (LB_Candidates.ItemIndex > 0) or ((LB_Candidates.ItemIndex = 0) and (LB_Candidates.Count = 1)) then
     tmp:= LB_Candidates.ItemIndex - 1
   else if ((LB_Candidates.ItemIndex + 1) <= LB_Candidates.Count) then
@@ -208,7 +212,18 @@ begin
   else
     tmp:= -1;
 
+  // Impedisco la perdita della selezione
+  i:= LB_Candidates.ItemIndex - 1;
+
+  LB_Software.Items.Add(LB_Candidates.Items[LB_Candidates.ItemIndex]);
+  LB_Software.ItemIndex:= LB_Software.Items.IndexOf(LB_Candidates.Items[LB_Candidates.ItemIndex]);
+
   LB_Candidates.Items.Delete(LB_Candidates.ItemIndex);
+
+  // Impedisco la perdita della selezione
+  LB_Candidates.ItemIndex:= i;
+  if (LB_Candidates.ItemIndex = -1) and (LB_Candidates.Items.Count > 0) then
+    LB_Candidates.ItemIndex:= 0;
 
   // Sposto la selezione sul SW appena sopra
   LB_Candidates.ItemIndex:= tmp;
@@ -336,7 +351,6 @@ end;
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
-  pw:             PWideChar;
   i,j,k:          Integer;
   HitInstallFile: TextFile;
 begin
@@ -345,7 +359,7 @@ begin
   L_Status1.Visible:= True;
   L_Status1.Font.Style:= L_Status1.Font.Style + [fsBold];
 
-  AssignFile(HitInstallFile, 'config\install\install.bat');
+  AssignFile(HitInstallFile, '%TEMP%\hitsugaya.bat');
   if not(DirectoryExists('config\install')) then
     CreateDir('config\install');
   Rewrite(HitInstallFile);
@@ -420,11 +434,8 @@ begin
   L_Status2.Visible:= True;
   L_Status2.Font.Style:= L_Status2.Font.Style + [fsBold];
 
-  pw:= PWideChar(CB_Drive.Items[CB_Drive.ItemIndex] + '\config\install\install.bat');
-  if CB_Mapping.Checked then
-    ShellExecute(Handle, 'open', pw, nil, nil, SW_SHOWNORMAL)
-  else
-    ShellExecute(Handle, 'open', 'config\install\install.bat', nil, nil, SW_SHOWNORMAL);
+  // Run installation script
+  ShellExecute(Handle, 'open', '%TEMP%\config\install\hitsugaya.bat', nil, nil, SW_SHOWNORMAL);
 
   IL_Hitsugaya.GetIcon(5, I_Check2.Picture.Icon);
   L_Status2.Caption:= L_Status2.Caption + ' OK';

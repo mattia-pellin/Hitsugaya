@@ -2,10 +2,14 @@ object F_Hitsugaya: TF_Hitsugaya
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  Caption = 'Hitsugaya v1.0a'
+  Caption = 'Hitsugaya v1.1a'
   ClientHeight = 456
   ClientWidth = 313
   Color = clHotLight
+  Constraints.MaxHeight = 494
+  Constraints.MaxWidth = 329
+  Constraints.MinHeight = 494
+  Constraints.MinWidth = 329
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -1944,7 +1948,7 @@ object F_Hitsugaya: TF_Hitsugaya
     Top = 177
     Width = 129
     Height = 169
-    Color = 12582911
+    Color = clWhite
     ItemHeight = 13
     Sorted = True
     TabOrder = 4
@@ -1974,7 +1978,7 @@ object F_Hitsugaya: TF_Hitsugaya
     Top = 177
     Width = 129
     Height = 169
-    Color = 12582911
+    Color = clWhite
     ItemHeight = 13
     TabOrder = 6
     OnClick = LB_CandidatesClick
@@ -2108,7 +2112,7 @@ object F_Hitsugaya: TF_Hitsugaya
     Left = 260
     Top = 380
     Bitmap = {
-      494C0101070088006C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010107008800740010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000A35229198D2D00FF8D2D00FFE3CFC125FFFFFF030000
