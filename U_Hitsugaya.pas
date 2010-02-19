@@ -359,9 +359,7 @@ begin
   L_Status1.Visible:= True;
   L_Status1.Font.Style:= L_Status1.Font.Style + [fsBold];
 
-  AssignFile(HitInstallFile, '%TEMP%\hitsugaya.bat');
-  if not(DirectoryExists('config\install')) then
-    CreateDir('config\install');
+  AssignFile(HitInstallFile, GetEnvironmentVariable('TEMP') + '\hitsugaya.bat');
   Rewrite(HitInstallFile);
 
   Writeln(HitInstallFile, '@echo off');
