@@ -433,7 +433,7 @@ begin
   L_Status2.Font.Style:= L_Status2.Font.Style + [fsBold];
 
   // Run installation script
-  ShellExecute(Handle, 'open', '%TEMP%\config\install\hitsugaya.bat', nil, nil, SW_SHOWNORMAL);
+  ShellExecute(Handle, 'open', PChar(GetEnvironmentVariable('TEMP') + '\hitsugaya.bat'), nil, nil, SW_SHOWNORMAL);
 
   IL_Hitsugaya.GetIcon(5, I_Check2.Picture.Icon);
   L_Status2.Caption:= L_Status2.Caption + ' OK';
