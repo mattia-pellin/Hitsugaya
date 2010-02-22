@@ -62,7 +62,7 @@ begin
   with TDownLoadURL.Create(nil) do
   try
     URL:= 'http://github.com/Ebrithil/Hitsugaya/raw/master/version';
-    Filename:= 'ver';
+    Filename:= GetEnvironmentVariable('TEMP') + 'ver';
     try
       ExecuteTarget(nil);
     except
@@ -98,11 +98,11 @@ begin
   GetOnlineVer();
   if FileExists('ver') then
     begin
-      AssignFile(vFile, 'ver');
+      AssignFile(vFile, GetEnvironmentVariable('TEMP') + 'ver');
       Reset(vFile);
       Readln(vFile, version);
       CloseFile(vFile);
-      DeleteFile('ver');
+      DeleteFile(GetEnvironmentVariable('TEMP') + 'ver');
 
       F_Updater.L_cVersion.Caption:= 'v' + version;
     end;
@@ -110,7 +110,7 @@ end;
 
 procedure TF_Updater.T_UpgradeTimer(Sender: TObject);
 begin
-  T_Upgrade.Tag:= T_Upgrade.Tag + T_Upgrade.Interval;
+  T_Upgrade.Tag:= T_Upgrade.Tag + Abs(T_Upgrade.Interval);
 
   if T_Upgrade.Tag = 1000 then
     begin
