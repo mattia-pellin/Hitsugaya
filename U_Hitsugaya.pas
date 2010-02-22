@@ -52,6 +52,9 @@ type
     { Public declarations }
   end;
 
+const
+  SW_PATH = 'config\';
+
 var
   F_Hitsugaya: TF_Hitsugaya;
   SwList:      U_ExtProcFunc.SWList;
@@ -118,9 +121,9 @@ procedure TF_Hitsugaya.FormCreate(Sender: TObject);
 var Res: TSearchRec;
 begin
   // Checking software availability
-  if (FindFirst('config\*.bat', faAnyFile, Res) <> 0)
+  if (FindFirst(SW_PATH + '*.bat', faAnyFile, Res) <> 0)
       or
-      not(DirectoryExists('config'))
+      not(DirectoryExists(SW_PATH))
   then
     begin
       MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
@@ -351,8 +354,9 @@ end;
 // -----------------------------------------------------------------------------
 procedure TF_Hitsugaya.B_StartClick(Sender: TObject);
 var
-  i,j,k:          Integer;
+  i,j,k,y:        Integer;
   HitInstallFile: TextFile;
+  StrList:        TStringList;
 begin
   // 1st Step -----
   I_Check1.Visible:= True;
@@ -396,10 +400,19 @@ begin
       for k := 0 to Length(SwList[i].Commands) - 1 do
       begin
         Writeln(HitInstallFile, 'echo   Esecuzione comando ' + IntToStr(k + 1) + ' di ' + IntToStr(Length(SwList[i].Commands)) + '...');
+        Write(HitInstallFile, 'start /wait');
+
+        StrList:= Split(SwList[i].Commands[k], ' ');
+        for y := 0 to StrList.Count - 1 do
+          if FileExists(SW_PATH + StrList[y]) then
+            Write(HitInstallFile, ' ' + SW_PATH + StrList[y])
+          else
+            Write(HitInstallFile, ' ' + StrList[y]);
+
         if CB_Mapping.Checked then
-          Writeln(HitInstallFile, 'start /wait ' + CB_Drive.Items[CB_Drive.ItemIndex] + '\config\' + SwList[i].Commands[k])
+          Writeln(HitInstallFile, CB_Drive.Items[CB_Drive.ItemIndex] + SW_PATH + SwList[i].Commands[k])
         else
-          Writeln(HitInstallFile, 'start /wait config\' + SwList[i].Commands[k]);
+          Writeln(HitInstallFile, SW_PATH + SwList[i].Commands[k]);
       end;
       Writeln(HitInstallFile, 'echo ----------');
     end;

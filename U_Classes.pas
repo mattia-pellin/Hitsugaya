@@ -100,6 +100,8 @@ implementation
   // ----------------------------------------
 
   constructor THitSoft.Create(bFileName: String; SoftList: array of THitSoft);
+  const
+    SW_PATH = 'config\';
   var
     i:     Integer;
     Row:   String;
@@ -107,9 +109,9 @@ implementation
     bFile: TextFile;
   begin
     fName:= bFileName;
-    if FileExists('Config\' + bFileName) then
+    if FileExists(SW_PATH + bFileName) then
       begin
-        AssignFile(bFile, 'Config\' + bFileName);
+        AssignFile(bFile, SW_PATH + bFileName);
         Reset(bFile);
 
         // Read FileName
@@ -140,7 +142,7 @@ implementation
           Category:= Null;
 
         SetLength(Commands, 0);
-        while not(Eof(bFile)) do
+        while not(EoF(bFile)) do
         begin
           // Read every command
           Readln(bFile, Row);
@@ -149,15 +151,19 @@ implementation
             begin
               sFile:= Split(Row, ' ');
               for i := 0 to sFile.Count - 1 do
-                if FileExists('config\' + sFile[i])
+                if FileExists(SW_PATH + sFile[i]) or (sFile[0] = '$F$')
                 then
                   begin
+                    if sFile[0] = '$F$' then
+                      Delete(Row, 1, 3);
                     if Version = '' then
-                      Version:= GetFileVer('config\' + sFile[i]);
+                      Version:= GetFileVer(SW_PATH + sFile[i]);
+
                     SetLength(Commands, Length(Commands) + 1);
                     Commands[Length(Commands) - 1]:= Row;
+                    Break;
                   end;
-                sFile.Free;
+              sFile.Free;
             end;
         end;
         CloseFile(bFile);
