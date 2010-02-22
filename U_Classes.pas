@@ -155,7 +155,7 @@ implementation
                 then
                   begin
                     if sFile[0] = '$F$' then
-                      Delete(Row, 1, 3);
+                      Delete(Row, 1, 4);
                     if Version = '' then
                       Version:= GetFileVer(SW_PATH + sFile[i]);
 

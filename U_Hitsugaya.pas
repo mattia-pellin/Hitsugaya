@@ -405,15 +405,15 @@ begin
         StrList:= Split(SwList[i].Commands[k], ' ');
         for y := 0 to StrList.Count - 1 do
           if FileExists(SW_PATH + StrList[y]) then
-            Write(HitInstallFile, ' ' + SW_PATH + StrList[y])
+            if CB_Mapping.Checked then
+              Write(HitInstallFile, ' ' + CB_Drive.Items[CB_Drive.ItemIndex] + '\' + SW_PATH + StrList[y])
+            else
+              Write(HitInstallFile, ' ' + SW_PATH + StrList[y])
           else
             Write(HitInstallFile, ' ' + StrList[y]);
-
-        if CB_Mapping.Checked then
-          Writeln(HitInstallFile, CB_Drive.Items[CB_Drive.ItemIndex] + SW_PATH + SwList[i].Commands[k])
-        else
-          Writeln(HitInstallFile, SW_PATH + SwList[i].Commands[k]);
+        Writeln(HitInstallFile, '');
       end;
+
       Writeln(HitInstallFile, 'echo ----------');
     end;
   end;
