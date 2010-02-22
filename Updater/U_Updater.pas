@@ -62,7 +62,7 @@ begin
   with TDownLoadURL.Create(nil) do
   try
     URL:= 'http://github.com/Ebrithil/Hitsugaya/raw/master/version';
-    Filename:= GetEnvironmentVariable('TEMP') + 'ver';
+    Filename:= GetEnvironmentVariable('TEMP') + '\ver';
     try
       ExecuteTarget(nil);
     except
@@ -96,13 +96,13 @@ begin
     L_yVersion.Caption:= 'File not Found!';
 
   GetOnlineVer();
-  if FileExists('ver') then
+  if FileExists(GetEnvironmentVariable('TEMP') + '\ver') then
     begin
-      AssignFile(vFile, GetEnvironmentVariable('TEMP') + 'ver');
+      AssignFile(vFile, GetEnvironmentVariable('TEMP') + '\ver');
       Reset(vFile);
       Readln(vFile, version);
       CloseFile(vFile);
-      DeleteFile(GetEnvironmentVariable('TEMP') + 'ver');
+      DeleteFile(GetEnvironmentVariable('TEMP') + '\ver');
 
       F_Updater.L_cVersion.Caption:= 'v' + version;
     end;
