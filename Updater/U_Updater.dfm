@@ -3,7 +3,7 @@ object F_Updater: TF_Updater
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Hitsugaya Updater v1.0'
+  Caption = 'Hitsugaya Updater v1.1'
   ClientHeight = 101
   ClientWidth = 410
   Color = clBtnFace
