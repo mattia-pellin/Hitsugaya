@@ -46,18 +46,22 @@ implementation
     VerInfo:      Pointer;
     VerValue:     PVSFixedFileInfo;
   begin
-    VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
-    GetMem(VerInfo, VerInfoSize);
-    GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
-    VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
-    with VerValue^ do
-    begin
-      Result := IntToStr(dwFileVersionMS shr 16);
-      Result := Result + '.' + IntToStr(dwFileVersionMS and $FFFF);
-      Result := Result + '.' + IntToStr(dwFileVersionLS shr 16);
-      Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
+    try
+      VerInfoSize := GetFileVersionInfoSize(PChar(sFileName), Dummy);
+      GetMem(VerInfo, VerInfoSize);
+      GetFileVersionInfo(PChar(sFileName), 0, VerInfoSize, VerInfo);
+      VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+      with VerValue^ do
+      begin
+        Result := IntToStr(dwFileVersionMS shr 16);
+        Result := Result + '.' + IntToStr(dwFileVersionMS and $FFFF);
+        Result := Result + '.' + IntToStr(dwFileVersionLS shr 16);
+        Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
+      end;
+    except
+      Result:= '';
+      FreeMem(VerInfo, VerInfoSize);
     end;
-    FreeMem(VerInfo, VerInfoSize);
   end;
 
   // Porting of VB Split function

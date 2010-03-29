@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Buttons, ShellApi,
-  ImgList, XMLDoc, XMLIntf, jpeg, U_Classes, U_ExtProcFunc;
+  ImgList, XMLDoc, XMLIntf, jpeg, xmldom, msxmldom, U_Classes, U_ExtProcFunc;
 
 type
     TF_Hitsugaya = class(TForm)
@@ -30,13 +30,10 @@ type
     CB_Drive: TComboBox;
     IL_Hitsugaya: TImageList;
     CB_Category: TComboBox;
+    XMLConfig: TXMLDocument;
     procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
-    procedure LB_SoftwareKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure LB_CandidatesKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure B_UpClick(Sender: TObject);
     procedure LB_CandidatesClick(Sender: TObject);
     procedure B_DownClick(Sender: TObject);
@@ -46,6 +43,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CB_CategoryChange(Sender: TObject);
     procedure CB_CategoryKeyPress(Sender: TObject; var Key: Char);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -82,6 +80,7 @@ end;
 
 procedure SaveCurrentConfig(const FileName: String);
 var
+    i:                  Integer;
     Config:             TXmlDocument;
     MainNode,           // Hitsugaya
       MappingNode,      // Mapping
@@ -91,6 +90,7 @@ var
 begin
   // Save current config into XML file
   Config:= TXMLDocument.Create(nil);
+  Config.Options := [doNodeAutoIndent];
   Config.Active:= True;
 
   MainNode:= Config.AddChild('program');
@@ -106,10 +106,53 @@ begin
       PathNode.Text:= F_Hitsugaya.E_Path.Text;
 
     SoftwareNode:= MainNode.AddChild('software');
-      CandidatesNode:= SoftwareNode.AddChild('candidates');
-      CandidatesNode.Text:= 'prova';
+    for i := 0 to F_Hitsugaya.LB_Candidates.Items.Count - 1 do
+    begin
+        CandidatesNode:= SoftwareNode.AddChild('candidate');
+        CandidatesNode.Text:= F_Hitsugaya.LB_Candidates.Items[i];
+    end;
 
   Config.SaveToFile(FileName);
+end;
+
+procedure LoadConfig(const FileName: String);
+var
+  i,
+  index:      Word;
+  Mapping,
+  Software,
+  Candidate:  IXMLNode;
+begin
+  F_Hitsugaya.XMLConfig.FileName:= GetCurrentDir() + '\' + FileName;
+  F_Hitsugaya.XMLConfig.Active:= True;
+
+  // Mapping
+  Mapping:= F_Hitsugaya.XMLConfig.DocumentElement.ChildNodes.FindNode('mapping');
+  F_Hitsugaya.E_Path.Text:= Mapping.ChildNodes['path'].Text;
+
+  if F_Hitsugaya.CB_Drive.Items.IndexOf(Mapping.Attributes['drive']) = -1 then
+    F_Hitsugaya.CB_Drive.ItemIndex:= F_Hitsugaya.CB_Drive.Items.Count - 1
+  else
+    F_Hitsugaya.CB_Drive.Text:= Mapping.Attributes['drive'];
+
+  if Mapping.Attributes['active'] = 'true' then
+    F_Hitsugaya.CB_Mapping.Checked:= true
+  else
+    F_Hitsugaya.CB_Mapping.Checked:= false;
+  // ----------
+
+  // Candidates
+  Software:= F_Hitsugaya.XMLConfig.DocumentElement.ChildNodes.FindNode('software');
+  for i:= 0 to Software.ChildNodes.Count - 1 do
+  begin
+    index:= F_Hitsugaya.LB_Software.Items.IndexOf(Software.ChildNodes[i].Text);
+    if index <> -1 then
+    begin
+       F_Hitsugaya.LB_Software.ItemIndex:= index;
+       F_Hitsugaya.B_Add.Click;
+    end;
+  end;
+  // ----------
 end;
 // -----------------------------------------------------------------------------
 
@@ -158,8 +201,6 @@ end;
 procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
 var vFile: TextFile;
 begin
-  //SaveCurrentConfig('config.xml');
-
   if FileExists('P_Hitsugaya.exe') then
   begin
     AssignFile(vFile, 'version');
@@ -264,9 +305,41 @@ end;
 
 
 
-
 // MOUSE & KEYBOARD CONTROLS SETTINGS
 // -----------------------------------------------------------------------------
+procedure TF_Hitsugaya.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  case Key of
+    8:   if LB_Candidates.ItemIndex > -1  then B_AddClick(Sender);
+    13:  if LB_Software.ItemIndex > -1    then B_RemoveClick(Sender);
+    112: ShowMessage('F1: Visualizza questo Help' + #13#10 + #13#10 +
+                     'F3: Salva in XML la configurazione per Aziende' + #13#10 +
+                     'F4: Salva in XML la configurazione per Privati' + #13#10 +
+                     'F7: Carica in XML la configurazione per Aziende' + #13#10 +
+                     'F8: Carica in XML la configurazione per Privati');
+    114: begin
+            SaveCurrentConfig('business.xml');
+            MessageDlg('Configurazione per Aziende salvata', mtInformation, [mbOK], 0);
+         end;
+    115: begin
+            SaveCurrentConfig('home.xml');
+            MessageDlg('Configurazione per Privati salvata', mtInformation, [mbOK], 0);
+         end;
+    118: begin
+            LoadConfig('business.xml');
+            MessageDlg('Configurazione per Aziende caricata', mtInformation, [mbOK], 0);
+         end;
+    119: begin
+            LoadConfig('home.xml');
+            MessageDlg('Configurazione per Privati caricata', mtInformation, [mbOK], 0);
+         end;
+  end;
+
+  LB_SoftwareClick(Sender);
+  LB_CandidatesClick(Sender);
+end;
+
 procedure TF_Hitsugaya.LB_CandidatesClick(Sender: TObject);
 begin
   if LB_Candidates.ItemIndex = -1 then
@@ -298,29 +371,15 @@ begin
     end;
 end;
 
-procedure TF_Hitsugaya.LB_CandidatesKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if (Key = 8) and (LB_Candidates.Count > 0) Then
-    B_RemoveClick(Sender);
-  LB_CandidatesClick(Sender);
-end;
-
 procedure TF_Hitsugaya.LB_SoftwareClick(Sender: TObject);
 begin
+  if LB_Software.ItemIndex = -1 then
+    Exit;
+
   if SwList[LB_Software.ItemIndex].Version = 'v' then
     B_Info.Enabled:= False
   else
     B_Info.Enabled:= True;
-end;
-
-procedure TF_Hitsugaya.LB_SoftwareKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if (Key = 13) and (LB_Candidates.Count > 0) Then
-    B_AddClick(Sender);
-  LB_SoftwareClick(Sender);
-  LB_CandidatesClick(Sender);
 end;
 
 procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);

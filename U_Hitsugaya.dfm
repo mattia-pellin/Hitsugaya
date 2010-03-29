@@ -53,9 +53,11 @@ object F_Hitsugaya: TF_Hitsugaya
     F054FCFCFD03FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FF3F
     0000FF3D0000FFFD0000F9EC0000E98C0000EF1C0000EF3C0000EF3800006961
     00006D6D00006F3F00006F3F0000000F0000800F0000803F0000E0FF0000}
+  KeyPreview = True
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
   object I_Logo: TImage
@@ -1948,12 +1950,17 @@ object F_Hitsugaya: TF_Hitsugaya
     Top = 177
     Width = 129
     Height = 169
-    Color = clWhite
+    BiDiMode = bdLeftToRight
+    Color = 12582911
+    Ctl3D = False
+    DoubleBuffered = True
     ItemHeight = 13
+    ParentBiDiMode = False
+    ParentCtl3D = False
+    ParentDoubleBuffered = False
     Sorted = True
     TabOrder = 4
     OnClick = LB_SoftwareClick
-    OnKeyDown = LB_SoftwareKeyDown
   end
   object P_Status: TPanel
     Left = 8
@@ -1978,11 +1985,16 @@ object F_Hitsugaya: TF_Hitsugaya
     Top = 177
     Width = 129
     Height = 169
-    Color = clWhite
+    BiDiMode = bdLeftToRight
+    Color = 12582911
+    Ctl3D = True
+    DoubleBuffered = True
     ItemHeight = 13
+    ParentBiDiMode = False
+    ParentCtl3D = False
+    ParentDoubleBuffered = False
     TabOrder = 6
     OnClick = LB_CandidatesClick
-    OnKeyDown = LB_CandidatesKeyDown
   end
   object B_Add: TBitBtn
     Left = 143
@@ -2109,10 +2121,10 @@ object F_Hitsugaya: TF_Hitsugaya
   object IL_Hitsugaya: TImageList
     DrawingStyle = dsTransparent
     ShareImages = True
-    Left = 260
-    Top = 380
+    Left = 25
+    Top = 10
     Bitmap = {
-      494C010107008800740010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010107008800A00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000A35229198D2D00FF8D2D00FFE3CFC125FFFFFF030000
@@ -2382,5 +2394,11 @@ object F_Hitsugaya: TF_Hitsugaya
       800FE003E00FF01F801FF003F01FF01FFE3FF8FFF83FF01FFE7FFCFFFC7FF01F
       FEFFFEFFFEFFF01FFFFFFFFFFFFFFFFF00000000000000000000000000000000
       000000000000}
+  end
+  object XMLConfig: TXMLDocument
+    Options = [doNodeAutoCreate, doNodeAutoIndent, doAttrNull, doAutoPrefix, doNamespaceDecl]
+    Left = 105
+    Top = 10
+    DOMVendorDesc = 'MSXML'
   end
 end
