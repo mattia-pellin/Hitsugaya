@@ -311,8 +311,8 @@ procedure TF_Hitsugaya.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   case Key of
-    8:   if LB_Candidates.ItemIndex > -1  then B_AddClick(Sender);
-    13:  if LB_Software.ItemIndex > -1    then B_RemoveClick(Sender);
+    8:   if LB_Candidates.ItemIndex > -1  then B_RemoveClick(Sender);
+    13:  if LB_Software.ItemIndex > -1    then B_AddClick(Sender);
     112: ShowMessage('F1: Visualizza questo Help' + #13#10 + #13#10 +
                      'F3: Salva in XML la configurazione per Aziende' + #13#10 +
                      'F4: Salva in XML la configurazione per Privati' + #13#10 +
@@ -384,7 +384,12 @@ end;
 
 procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
 begin
-  MessageDlg(SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version, mtInformation, [mbOK], 0);
+  MessageDlg(
+    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Name
+    + #13#10 +
+    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version,
+    mtInformation, [mbOK], 0
+    );
 end;
 
 procedure TF_Hitsugaya.CB_CategoryChange(Sender: TObject);
