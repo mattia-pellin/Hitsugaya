@@ -181,7 +181,7 @@ begin
   // Build available categories list
   BuildCategoryList(SwList, CB_Category);
   // Set user desktop as default update directory
-  OD_Update.InitialDir:= GetEnvironmentVariable('USERPROFILE') + '\Desktop';
+  OD_Update.InitialDir:= GetEnvironmentVariable('HOMEPATH') + '\Desktop';
   // Show executing path
   E_Path.Text:= GetCurrentDir();
   if E_Path.Text[1] = '\' then
@@ -504,17 +504,6 @@ begin
       B_Up.Enabled:= True;
       B_Down.Enabled:= True;
     end;
-end;
-
-procedure TF_Hitsugaya.LB_SoftwareClick(Sender: TObject);
-begin
-  if LB_Software.ItemIndex = -1 then
-    Exit;
-
-  if SwList[LB_Software.ItemIndex].Version = 'vN.R.' then
-    B_Info.Enabled:= False
-  else
-    B_Info.Enabled:= True;
 end;
 
 procedure TF_Hitsugaya.CB_CategoryChange(Sender: TObject);

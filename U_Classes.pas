@@ -128,13 +128,9 @@ implementation
           Name:= Row;
 
         // Read FileVersion
-        Readln(bFile, Row);
-        Delete(Row, 1, 2);
-        Trim(Row);
-        if Row <> '' then
-          Version:= Row
-        else
-          Version:= '';
+        Readln(bFile, Version);
+        Delete(Version, 1, 2);
+        Trim(Version);
 
         // Read FileCategory
         Readln(bFile, Row);
