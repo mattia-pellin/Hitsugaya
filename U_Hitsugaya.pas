@@ -38,7 +38,6 @@ type
     procedure LB_CandidatesClick(Sender: TObject);
     procedure B_DownClick(Sender: TObject);
     procedure B_InfoClick(Sender: TObject);
-    procedure LB_SoftwareClick(Sender: TObject);
     procedure B_StartClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CB_CategoryChange(Sender: TObject);
@@ -192,7 +191,6 @@ begin
     LB_Software.ItemIndex:= 0;
     B_Add.Enabled:= True;
   end;
-  LB_SoftwareClick(Sender);
 end;
 // -----------------------------------------------------------------------------
 
@@ -470,7 +468,6 @@ begin
          end;
   end;
 
-  LB_SoftwareClick(Sender);
   LB_CandidatesClick(Sender);
 end;
 
