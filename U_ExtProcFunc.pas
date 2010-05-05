@@ -19,6 +19,7 @@ var
     Test:     THitSoft;
 begin
   SetLength(Result, 0);
+  LB_Soft.Items.Clear;
   FindFirst('config\*.bat', faAnyFile, Res);
 
   repeat
@@ -39,6 +40,7 @@ end;
 procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
 var i: Integer;
 begin
+  Categories.Items.Clear;
   Categories.Items.Add('Tutte le Categorie');
 
   for i := 0 to Length(Software) - 1 do

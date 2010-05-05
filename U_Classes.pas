@@ -59,7 +59,7 @@ implementation
         Result := Result + '.' + IntToStr(dwFileVersionLS and $FFFF);
       end;
     except
-      Result:= '';
+      Result:= 'N.R.';
       FreeMem(VerInfo, VerInfoSize);
     end;
   end;
@@ -132,7 +132,7 @@ implementation
         Delete(Row, 1, 2);
         Trim(Row);
         if Row <> '' then
-          Version:= 'v' + Row
+          Version:= Row
         else
           Version:= '';
 
@@ -158,6 +158,7 @@ implementation
                 if FileExists(SW_PATH + sFile[i]) or (sFile[0] = '$F$')
                 then
                   begin
+
                     if sFile[0] = '$F$' then
                       Delete(Row, 1, 4);
                     if Version = '' then

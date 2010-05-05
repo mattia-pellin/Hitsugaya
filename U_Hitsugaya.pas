@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Buttons, ShellApi,
-  ImgList, XMLDoc, XMLIntf, jpeg, xmldom, msxmldom, U_Classes, U_ExtProcFunc;
+  Dialogs, StdCtrls, ExtCtrls, Buttons, ShellApi, StrUtils,
+  ImgList, XMLDoc, XMLIntf, jpeg, xmldom, msxmldom, U_Classes, U_ExtProcFunc,
+  CheckLst;
 
 type
     TF_Hitsugaya = class(TForm)
@@ -22,15 +23,14 @@ type
     B_Info: TBitBtn;
     B_Up: TBitBtn;
     B_Down: TBitBtn;
-    I_Check1: TImage;
-    L_Status1: TLabel;
-    I_Check2: TImage;
-    L_Status2: TLabel;
     B_Start: TButton;
     CB_Drive: TComboBox;
     IL_Hitsugaya: TImageList;
     CB_Category: TComboBox;
     XMLConfig: TXMLDocument;
+    B_Update: TBitBtn;
+    CLB_Status: TCheckListBox;
+    OD_Update: TOpenDialog;
     procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
@@ -44,6 +44,7 @@ type
     procedure CB_CategoryChange(Sender: TObject);
     procedure CB_CategoryKeyPress(Sender: TObject; var Key: Char);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure B_UpdateClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -72,9 +73,7 @@ begin
     IL_Hitsugaya.GetBitmap(2, B_Up.Glyph);
     IL_Hitsugaya.GetBitmap(3, B_Down.Glyph);
     IL_Hitsugaya.GetBitmap(4, B_Info.Glyph);
-
-    IL_Hitsugaya.GetIcon(4, I_Check1.Picture.Icon);
-    IL_Hitsugaya.GetIcon(4, I_Check2.Picture.Icon);
+    IL_Hitsugaya.GetBitmap(5, B_Update.Glyph);
   end;
 end;
 
@@ -120,8 +119,7 @@ var
   i,
   index:      Word;
   Mapping,
-  Software,
-  Candidate:  IXMLNode;
+  Software:   IXMLNode;
 begin
   F_Hitsugaya.XMLConfig.FileName:= GetCurrentDir() + '\' + FileName;
   F_Hitsugaya.XMLConfig.Active:= True;
@@ -182,8 +180,12 @@ begin
   SwList:= BuildSoftwareList(LB_Software);
   // Build available categories list
   BuildCategoryList(SwList, CB_Category);
+  // Set user desktop as default update directory
+  OD_Update.InitialDir:= GetEnvironmentVariable('USERPROFILE') + '\Desktop';
   // Show executing path
   E_Path.Text:= GetCurrentDir();
+  if E_Path.Text[1] = '\' then
+    CB_Mapping.Checked:= True;
 
   if LB_Software.Count > 0 then
   begin
@@ -222,12 +224,14 @@ begin
     Exit;
 
   // Impedisco la perdita della selezione
-  i:= LB_Software.ItemIndex - 1;
+  if (LB_Software.ItemIndex + 1) >= (LB_Software.Count - 1) then
+    i:= LB_Software.ItemIndex + 1
+  else
+    i:= LB_Software.ItemIndex - 1;
 
   LB_Candidates.Items.Add(LB_Software.Items[LB_Software.ItemIndex]);
   LB_Software.Items.Delete(LB_Software.ItemIndex);
 
-  // Impedisco la perdita della selezione
   LB_Software.ItemIndex:= i;
   if (LB_Software.ItemIndex = -1) and (LB_Software.Items.Count > 0) then
     LB_Software.ItemIndex:= 0;
@@ -273,6 +277,136 @@ begin
   LB_Candidates.ItemIndex:= tmp;
 
   LB_CandidatesClick(Sender);
+end;
+// -----------------------------------------------------------------------------
+
+
+
+// SOFTWARE OPERATIONS
+// -----------------------------------------------------------------------------
+procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
+begin
+  MessageDlg(
+    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Name
+    + #13#10 +
+    'v' + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version,
+    mtInformation, [mbOK], 0
+    );
+end;
+
+procedure TF_Hitsugaya.B_UpdateClick(Sender: TObject);
+const
+  SW_PATH = '\config\';
+var
+  i,k:          Word;
+  Check:        Boolean;
+  sFile,
+  sComm:        TStringList;
+  bFile:        TextFile;
+  Row,
+  UpdateFile,
+  FileVersion,
+  NewFilePath:  String;
+begin
+  // Controllo che sia stata fatta la selezione iniziale
+  if LB_Software.ItemIndex = -1 then
+    Exit;
+
+  // Seleziono il file aggiornato
+  OD_Update.Execute();
+  if OD_Update.FileName = '' then
+    Exit;
+
+  UpdateFile:= OD_Update.FileName;
+  UpdateFile:= RightStr(UpdateFile, Length(UpdateFile) - LastDelimiter('\', UpdateFile));
+
+  // Richiesta versione
+  Check:= True;
+  FileVersion:= InputBox('Richiesta Versione', 'Digitare la versione del file:' + #13#10 + '(lasciare vuoto per autorilevamento)', '' );
+  if FileVersion = '' then
+  begin
+    FileVersion:= GetFileVer(OD_Update.FileName);
+    Check:= False;
+  end;
+
+  // Conferma sostituzione
+  if MessageDlg(
+    'Sostituire il file' +
+    #13#10 +
+    #13#10 +
+    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Name +
+    ' (v' +
+    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version +
+    ')' +
+    #13#10 +
+    #13#10 +
+    'con questo file:' +
+    #13#10 +
+    #13#10 +
+    UpdateFile +
+    ' (v' +
+    FileVersion +
+    ') ?',
+    mtConfirmation, mbYesNo, 0, mbYes
+    ) = mrYes then
+      begin
+        // Replace command line in batch file
+        AssignFile(bFile, '.' + SW_PATH + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].fName);
+        Reset(bFile);
+
+        sFile:= TStringList.Create;
+        while not(EoF(bFile)) do
+        begin
+          Readln(bFile, Row);
+          sFile.Add(Trim(Row));
+        end;
+        CloseFile(bFile);
+
+        Rewrite(bFile);
+        for i := 0 to sFile.Count - 1 do
+        begin
+          if i = 1 then
+            if Check then
+              Writeln(bFile, '::' + FileVersion)
+            else
+              Writeln(bFile, '::')
+          else if i > 2 then
+            begin
+              sComm:= Split(sFile[i], ' ');
+              for k := 0 to sComm.Count - 1 do
+                if FileExists('.' + SW_PATH + sComm[k]) then
+                begin
+                  sFile[i]:= StringReplace(sFile[i], RightStr(sComm[k], Length(sComm[k]) - LastDelimiter('\', sComm[k])), UpdateFile, [rfReplaceAll]);
+                  DeleteFile('.' + SW_PATH + sComm[k]);
+                  Break;
+                end;
+              Writeln(bFile, sFile[i]);
+              sComm.Free;
+            end
+          else
+            Writeln(bFile, sFile[i]);
+        end;
+        CloseFile(bFile);
+
+        // Replace old installer
+        sFile.Free;
+        sFile:= Split(SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Commands[0], ' ');
+        for i := 0 to sFile.Count - 1 do
+          if FileExists(E_Path.Text + SW_PATH + sFile[i]) then
+          begin
+            NewFilePath:= LeftStr(E_Path.Text + SW_PATH + sFile[i], LastDelimiter('\', E_Path.Text + SW_PATH + sFile[i]));
+            sFile.Free;
+            Break;
+          end;
+        CopyFile(pChar(OD_Update.FileName), pChar(NewFilePath + UpdateFile), True);
+
+        // Rebuild software list
+        SwList:= BuildSoftwareList(LB_Software);
+        // Rebuild available categories list
+        BuildCategoryList(SwList, CB_Category);
+
+        MessageDlg('Aggiornamento avvenuto con successo', mtInformation, [mbOK], 0);
+      end
 end;
 // -----------------------------------------------------------------------------
 
@@ -340,6 +474,7 @@ begin
   LB_CandidatesClick(Sender);
 end;
 
+
 procedure TF_Hitsugaya.LB_CandidatesClick(Sender: TObject);
 begin
   if LB_Candidates.ItemIndex = -1 then
@@ -376,20 +511,10 @@ begin
   if LB_Software.ItemIndex = -1 then
     Exit;
 
-  if SwList[LB_Software.ItemIndex].Version = 'v' then
+  if SwList[LB_Software.ItemIndex].Version = 'vN.R.' then
     B_Info.Enabled:= False
   else
     B_Info.Enabled:= True;
-end;
-
-procedure TF_Hitsugaya.B_InfoClick(Sender: TObject);
-begin
-  MessageDlg(
-    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Name
-    + #13#10 +
-    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version,
-    mtInformation, [mbOK], 0
-    );
 end;
 
 procedure TF_Hitsugaya.CB_CategoryChange(Sender: TObject);
@@ -423,9 +548,7 @@ var
   StrList:        TStringList;
 begin
   // 1st Step -----
-  I_Check1.Visible:= True;
-  L_Status1.Visible:= True;
-  L_Status1.Font.Style:= L_Status1.Font.Style + [fsBold];
+  CLB_Status.Items.Add('Creating Batch File...');
 
   AssignFile(HitInstallFile, GetEnvironmentVariable('TEMP') + '\hitsugaya.bat');
   Rewrite(HitInstallFile);
@@ -499,22 +622,17 @@ begin
   Writeln(HitInstallFile, 'pause');
 
   CloseFile(HitInstallFile);
-  IL_Hitsugaya.GetIcon(5, I_Check1.Picture.Icon);
-  L_Status1.Caption:= L_Status1.Caption + ' OK';
-  L_Status1.Font.Style:= L_Status1.Font.Style - [fsBold];
+
+  CLB_Status.Checked[CLB_Status.Count - 1]:= True;
   //----------
 
   // 2nd Step -----
-  I_Check2.Visible:= True;
-  L_Status2.Visible:= True;
-  L_Status2.Font.Style:= L_Status2.Font.Style + [fsBold];
+  CLB_Status.Items.Add('Executing Batch File...');
 
   // Run installation script
   ShellExecute(Handle, 'open', PChar(GetEnvironmentVariable('TEMP') + '\hitsugaya.bat'), nil, nil, SW_SHOWNORMAL);
 
-  IL_Hitsugaya.GetIcon(5, I_Check2.Picture.Icon);
-  L_Status2.Caption:= L_Status2.Caption + ' OK';
-  L_Status2.Font.Style:= L_Status2.Font.Style - [fsBold];
+  CLB_Status.Checked[CLB_Status.Count - 1]:= True;
   //----------
 
   Sleep(3000);
