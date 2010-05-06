@@ -116,7 +116,7 @@ end;
 procedure LoadConfig(const FileName: String);
 var
   i,
-  index:      Word;
+  index:      Integer;
   Mapping,
   Software:   IXMLNode;
 begin
@@ -294,64 +294,87 @@ end;
 
 procedure TF_Hitsugaya.B_UpdateClick(Sender: TObject);
 const
-  SW_PATH = '\config\';
+  SW_PATH = 'config\';
 var
-  i,k:          Word;
-  Check:        Boolean;
+  i:            Word;
+  AutoCheck:    Boolean;
   sFile,
   sComm:        TStringList;
   bFile:        TextFile;
   Row,
-  UpdateFile,
-  FileVersion,
-  NewFilePath:  String;
+  FilePath,
+  NewFileVer,
+  OldFileVer,
+  OldFileName,
+  NewFileName:  String;
 begin
-  // Controllo che sia stata fatta la selezione iniziale
+  // Security check
   if LB_Software.ItemIndex = -1 then
     Exit;
 
-  // Seleziono il file aggiornato
+  // Update capability check
+  if Length(SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Commands) > 1 then
+    begin
+      MessageDlg('Impossibile aggiornare file batch con più di un comando!', mtError, [mbOK], 0);
+      Exit;
+    end;
+
+  // Take old file path
+  AssignFile(bFile, SW_PATH + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].fName);
+  Reset(bFile);
+
+  FilePath:= '';
+  while not(EoF(bFile)) and (FilePath = '') do
+  begin
+    Readln(bFile, Row);
+    sComm:= Split(Trim(Row), ' ');
+    for i:= 0 to sComm.Count - 1 do
+      if FileExists(SW_PATH + sComm[i]) then
+      begin
+        FilePath:= SW_PATH + sComm[i];
+        Break;
+      end;
+    sComm.Free;
+  end;
+  CloseFile(bFile);
+
+  OldFileName:= RightStr(FilePath, Length(FilePath) - LastDelimiter('\', FilePath));
+  FilePath:= LeftStr(FilePath, LastDelimiter('\', FilePath));
+
+  // Take new file path
   OD_Update.Execute();
   if OD_Update.FileName = '' then
     Exit;
 
-  UpdateFile:= OD_Update.FileName;
-  UpdateFile:= RightStr(UpdateFile, Length(UpdateFile) - LastDelimiter('\', UpdateFile));
+  NewFileName:= RightStr(OD_Update.FileName, Length(OD_Update.FileName) - LastDelimiter('\', OD_Update.FileName));
 
-  // Richiesta versione
-  Check:= True;
-  FileVersion:= InputBox('Richiesta Versione', 'Digitare la versione del file:' + #13#10 + '(lasciare vuoto per autorilevamento)', '' );
-  if FileVersion = '' then
+  // Ask for version
+  AutoCheck:= False;
+  OldFileVer:= SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version;
+  NewFileVer:= InputBox('Richiesta Versione', 'Digitare la versione del file:' + #13#10 + '(lasciare vuoto per autorilevamento)', '' );
+  if NewFileVer = '' then
   begin
-    FileVersion:= GetFileVer(OD_Update.FileName);
-    Check:= False;
+    NewFileVer:= GetFileVer(OD_Update.FileName);
+    AutoCheck:= True;
   end;
 
-  // Conferma sostituzione
+  // Operation confirmation
   if MessageDlg(
     'Sostituire il file' +
     #13#10 +
     #13#10 +
-    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Name +
-    ' (v' +
-    SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Version +
-    ')' +
+    OldFileName + ' (v' + OldFileVer + ')' +
     #13#10 +
     #13#10 +
     'con questo file:' +
     #13#10 +
     #13#10 +
-    UpdateFile +
-    ' (v' +
-    FileVersion +
-    ') ?',
+    NewFileName + ' (v' + NewFileVer + ') ?',
     mtConfirmation, mbYesNo, 0, mbYes
     ) = mrYes then
       begin
         // Replace command line in batch file
-        AssignFile(bFile, '.' + SW_PATH + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].fName);
         Reset(bFile);
-
         sFile:= TStringList.Create;
         while not(EoF(bFile)) do
         begin
@@ -364,47 +387,32 @@ begin
         for i := 0 to sFile.Count - 1 do
         begin
           if i = 1 then
-            if Check then
-              Writeln(bFile, '::' + FileVersion)
+            if AutoCheck then
+              sFile[i]:= '::'
             else
-              Writeln(bFile, '::')
-          else if i > 2 then
-            begin
-              sComm:= Split(sFile[i], ' ');
-              for k := 0 to sComm.Count - 1 do
-                if FileExists('.' + SW_PATH + sComm[k]) then
-                begin
-                  sFile[i]:= StringReplace(sFile[i], RightStr(sComm[k], Length(sComm[k]) - LastDelimiter('\', sComm[k])), UpdateFile, [rfReplaceAll]);
-                  DeleteFile('.' + SW_PATH + sComm[k]);
-                  Break;
-                end;
-              Writeln(bFile, sFile[i]);
-              sComm.Free;
-            end
+              sFile[i]:= '::' + NewFileVer
           else
-            Writeln(bFile, sFile[i]);
+            sFile[i]:= StringReplace(sFile[i], OldFileName, NewFileName,[rfReplaceAll]);
+
+          if i < (sFile.Count - 1) then
+            Writeln(bFile, sFile[i])
+          else
+            Write(bFile, sFile[i]);
         end;
         CloseFile(bFile);
 
-        // Replace old installer
         sFile.Free;
-        sFile:= Split(SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].Commands[0], ' ');
-        for i := 0 to sFile.Count - 1 do
-          if FileExists(E_Path.Text + SW_PATH + sFile[i]) then
-          begin
-            NewFilePath:= LeftStr(E_Path.Text + SW_PATH + sFile[i], LastDelimiter('\', E_Path.Text + SW_PATH + sFile[i]));
-            sFile.Free;
-            Break;
-          end;
-        CopyFile(pChar(OD_Update.FileName), pChar(NewFilePath + UpdateFile), True);
+
+        CopyFile(pChar(OD_Update.FileName), pChar(FilePath + NewFileName), True);
+        DeleteFile(FilePath + OldFileName);
 
         // Rebuild software list
         SwList:= BuildSoftwareList(LB_Software);
         // Rebuild available categories list
         BuildCategoryList(SwList, CB_Category);
 
-        MessageDlg('Aggiornamento avvenuto con successo', mtInformation, [mbOK], 0);
-      end
+        MessageDlg('Aggiornamento completato', mtInformation, [mbOK], 0);
+      end;
 end;
 // -----------------------------------------------------------------------------
 
