@@ -293,8 +293,6 @@ begin
 end;
 
 procedure TF_Hitsugaya.B_UpdateClick(Sender: TObject);
-const
-  SW_PATH = 'config\';
 var
   i:            Word;
   AutoCheck:    Boolean;
@@ -320,7 +318,7 @@ begin
     end;
 
   // Take old file path
-  AssignFile(bFile, SW_PATH + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].fName);
+  AssignFile(bFile, E_Path.Text + '\' + SW_PATH + SwList[HitSoftFind(LB_Software.Items[LB_Software.ItemIndex], SwList)].fName);
   Reset(bFile);
 
   FilePath:= '';
@@ -329,9 +327,9 @@ begin
     Readln(bFile, Row);
     sComm:= Split(Trim(Row), ' ');
     for i:= 0 to sComm.Count - 1 do
-      if FileExists(SW_PATH + sComm[i]) then
+      if FileExists(E_Path.Text + '\' + SW_PATH + sComm[i]) then
       begin
-        FilePath:= SW_PATH + sComm[i];
+        FilePath:= E_Path.Text + '\' + SW_PATH + sComm[i];
         Break;
       end;
     sComm.Free;
