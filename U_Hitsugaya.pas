@@ -363,6 +363,8 @@ begin
     Exit;
 
   NewFileName:= RightStr(OD_Update.FileName, Length(OD_Update.FileName) - LastDelimiter('\', OD_Update.FileName));
+  // Replace all " " with "_"
+  NewFileName:= StringReplace(NewFileName, ' ', '_', [rfReplaceAll]);
 
   // Ask for version
   AutoCheck:= False;

@@ -77,8 +77,8 @@
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">1</VersionInfo>
 						<VersionInfo Name="MinorVer">6</VersionInfo>
-						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">419</VersionInfo>
+						<VersionInfo Name="Release">2</VersionInfo>
+						<VersionInfo Name="Build">421</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -90,7 +90,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Informatica Bassanese Servizi</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Hitsugaya Installer</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">1.6.1.419</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.6.2.421</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Hitsugaya</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright"/>
 						<VersionInfoKeys Name="LegalTrademarks"/>
