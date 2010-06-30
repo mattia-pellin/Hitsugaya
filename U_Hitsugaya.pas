@@ -31,6 +31,11 @@ type
     B_Update: TBitBtn;
     CLB_Status: TCheckListBox;
     OD_Update: TOpenDialog;
+    P_WSUS: TPanel;
+    E_Path_WSUS: TEdit;
+    CB_Mapping_WSUS: TCheckBox;
+    CB_Drive_WSUS: TComboBox;
+    CB_Reboot: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
@@ -139,6 +144,12 @@ begin
   // ----------
 
   // Candidates
+  if F_Hitsugaya.CB_Category.Items.Count > 0 then
+  begin
+    F_Hitsugaya.CB_Category.ItemIndex:= 0;
+    F_Hitsugaya.CB_CategoryChange(F_Hitsugaya.CB_Category);
+  end;
+
   Software:= F_Hitsugaya.XMLConfig.DocumentElement.ChildNodes.FindNode('software');
   for i:= 0 to Software.ChildNodes.Count - 1 do
   begin
@@ -175,6 +186,11 @@ begin
   LoadIcons();
   // Create available drives list for mapping
   CreateFreeDriveList(CB_Drive);
+  CB_Drive_WSUS.Items:= CB_Drive.Items;
+  if CB_Drive_WSUS.Items.IndexOf('W:') = -1 then
+    CB_Drive_WSUS.ItemIndex:= CB_Drive_WSUS.Items.Count - 2
+  else
+    CB_Drive_WSUS.ItemIndex:= CB_Drive_WSUS.Items.IndexOf('W:');
   // Build available software list
   SwList:= BuildSoftwareList(LB_Software);
   // Build available categories list
@@ -183,6 +199,8 @@ begin
   OD_Update.InitialDir:= GetEnvironmentVariable('HOMEPATH') + '\Desktop';
   // Show executing path
   E_Path.Text:= GetCurrentDir();
+  E_Path_WSUS.Text:= LeftStr(E_Path.Text, LastDelimiter('\', E_Path.Text));
+  E_Path_WSUS.Text:= E_Path_WSUS.Text + 'WSUSoffline';
   if E_Path.Text[1] = '\' then
     CB_Mapping.Checked:= True;
 
@@ -542,6 +560,10 @@ begin
   // 1st Step -----
   CLB_Status.Items.Add('Creating Batch File...');
 
+  // Precautionary cleaning
+  if FileExists(GetEnvironmentVariable('TEMP') + '\hitsugaya.bat') then
+    DeleteFile(GetEnvironmentVariable('TEMP') + '\hitsugaya.bat');
+
   AssignFile(HitInstallFile, GetEnvironmentVariable('TEMP') + '\hitsugaya.bat');
   Rewrite(HitInstallFile);
 
@@ -551,11 +573,17 @@ begin
   Writeln(HitInstallFile, 'echo Hitsugaya installation Batch');
   Writeln(HitInstallFile, 'echo ----------');
 
-  // Map remote path
+  // Map remote paths
   if CB_Mapping.Checked then
   begin
     Writeln(HitInstallFile, 'echo Mappatura di ' + E_Path.Text + ' in ' + CB_Drive.Items[CB_Drive.ItemIndex] + ' ...');
     Writeln(HitInstallFile, 'net use ' + CB_Drive.Items[CB_Drive.ItemIndex] + ' ' + E_Path.Text + ' /PERSISTENT:NO');
+    Writeln(HitInstallFile, 'echo ----------');
+  end;
+  if CB_Mapping_WSUS.Checked then
+  begin
+    Writeln(HitInstallFile, 'echo Mappatura di ' + E_Path_WSUS.Text + ' in ' + CB_Drive_WSUS.Items[CB_Drive_WSUS.ItemIndex] + ' ...');
+    Writeln(HitInstallFile, 'net use ' + CB_Drive_WSUS.Items[CB_Drive_WSUS.ItemIndex] + ' ' + E_Path_WSUS.Text + ' /PERSISTENT:NO');
     Writeln(HitInstallFile, 'echo ----------');
   end;
 
@@ -568,6 +596,7 @@ begin
   Writeln(HitInstallFile, 'gpupdate /force');
   Writeln(HitInstallFile, 'echo ----------');
 
+  // Create installation list
   for j:= 0 to (LB_Candidates.Count - 1) do
   begin
     i:= HitSoftFind(LB_Candidates.Items[j], SwList);
@@ -597,6 +626,17 @@ begin
     end;
   end;
 
+  // If selected, launch WSUS offline
+  if CB_Mapping_WSUS.Checked then
+  begin
+    Writeln(HitInstallFile, 'echo Installazione degli aggiornamenti WSUS...');
+    if CB_Reboot.Checked then
+      Writeln(HitInstallFile, 'start ' + CB_Drive_WSUS.Items[CB_Drive_WSUS.ItemIndex] + '\cmd\DoUpdate.cmd /autoreboot')
+    else
+      Writeln(HitInstallFile, 'start ' + CB_Drive_WSUS.Items[CB_Drive_WSUS.ItemIndex] + '\cmd\DoUpdate.cmd');
+    Writeln(HitInstallFile, 'echo ----------');
+  end;
+
   // Re-enable remote exe authorization prompt
   Writeln(HitInstallFile, 'echo Ripristino protezioni file exe...');
   Writeln(HitInstallFile, 'REG DELETE HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations /f');
@@ -610,6 +650,9 @@ begin
   else
     Writeln(HitInstallFile, 'REG IMPORT ' + E_Path.Text + '\tools\WindowsOptimize.reg');
   Writeln(HitInstallFile, 'echo ----------');
+
+  if CB_Reboot.Checked and not(CB_Mapping_WSUS.Checked) then
+    Writeln(HitInstallFile, 'shutdown -r -c "Riavvio programmato da IBS Hitsugaya"');
 
   Writeln(HitInstallFile, 'pause');
 

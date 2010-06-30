@@ -2,12 +2,14 @@ object F_Hitsugaya: TF_Hitsugaya
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  Caption = 'Hitsugaya v1.5b'
-  ClientHeight = 506
+  Caption = 'Hitsugaya v1.6b'
+  ClientHeight = 562
   ClientWidth = 434
   Color = clHotLight
-  Constraints.MinHeight = 494
-  Constraints.MinWidth = 329
+  Constraints.MaxHeight = 600
+  Constraints.MaxWidth = 450
+  Constraints.MinHeight = 600
+  Constraints.MinWidth = 450
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -1059,7 +1061,7 @@ object F_Hitsugaya: TF_Hitsugaya
     Top = 79
     Width = 418
     Height = 17
-    Caption = 'Mapping'
+    Caption = 'Network Drive'
     Color = clAqua
     Ctl3D = True
     Font.Charset = DEFAULT_CHARSET
@@ -1108,7 +1110,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object P_Status: TPanel
     Left = 8
-    Top = 399
+    Top = 454
     Width = 418
     Height = 17
     Caption = 'Status'
@@ -1231,7 +1233,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object B_Start: TButton
     Left = 8
-    Top = 474
+    Top = 529
     Width = 418
     Height = 25
     Caption = 'Start!'
@@ -1279,7 +1281,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object CLB_Status: TCheckListBox
     Left = 8
-    Top = 422
+    Top = 477
     Width = 418
     Height = 46
     Cursor = crHourGlass
@@ -1299,6 +1301,61 @@ object F_Hitsugaya: TF_Hitsugaya
     ShowHint = False
     TabOrder = 16
   end
+  object P_WSUS: TPanel
+    Left = 8
+    Top = 399
+    Width = 418
+    Height = 17
+    Caption = 'WSUS offline'
+    Color = clAqua
+    Ctl3D = True
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentBackground = False
+    ParentCtl3D = False
+    ParentFont = False
+    TabOrder = 17
+  end
+  object E_Path_WSUS: TEdit
+    Left = 8
+    Top = 422
+    Width = 278
+    Height = 21
+    Color = 12582911
+    TabOrder = 18
+  end
+  object CB_Mapping_WSUS: TCheckBox
+    Left = 341
+    Top = 424
+    Width = 17
+    Height = 17
+    TabOrder = 19
+  end
+  object CB_Drive_WSUS: TComboBox
+    Left = 292
+    Top = 422
+    Width = 43
+    Height = 21
+    Color = 12582911
+    TabOrder = 20
+  end
+  object CB_Reboot: TCheckBox
+    Left = 364
+    Top = 424
+    Width = 62
+    Height = 17
+    Caption = 'Reboot'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 21
+  end
   object IL_Hitsugaya: TImageList
     BlendColor = clBtnFace
     BkColor = 15790320
@@ -1306,7 +1363,7 @@ object F_Hitsugaya: TF_Hitsugaya
     Left = 25
     Top = 10
     Bitmap = {
-      494C01010600A000600010001000F0F0F000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600A000680010001000F0F0F000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000008F50001099610032965A002200000000000000000000
