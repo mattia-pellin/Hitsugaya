@@ -2,7 +2,7 @@ object F_Hitsugaya: TF_Hitsugaya
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  Caption = 'Hitsugaya v1.6b'
+  Caption = 'Hitsugaya v2.0'
   ClientHeight = 562
   ClientWidth = 434
   Color = clHotLight
@@ -1038,6 +1038,22 @@ object F_Hitsugaya: TF_Hitsugaya
       FCF32D9CECF6EBEF4515ECE5F469AD91F3F985493DD9E85F063C0D6577E1D371
       120B4B58F11ADB42B80CBE8EC796FC3145145456A92E6DCF09AD4FFFD9}
   end
+  object L_Bits: TLabel
+    Left = 369
+    Top = 8
+    Width = 52
+    Height = 30
+    Caption = 'x??'
+    Color = clRed
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clRed
+    Font.Height = -21
+    Font.Name = 'Ravie'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    Transparent = True
+  end
   object P_Spacer: TPanel
     Left = 8
     Top = 129
@@ -1099,12 +1115,18 @@ object F_Hitsugaya: TF_Hitsugaya
     BevelOuter = bvNone
     BiDiMode = bdLeftToRight
     Color = 12582911
-    Ctl3D = False
+    Ctl3D = True
     DoubleBuffered = True
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ItemHeight = 13
     ParentBiDiMode = False
     ParentCtl3D = False
     ParentDoubleBuffered = False
+    ParentFont = False
     Sorted = True
     TabOrder = 4
   end
@@ -1138,10 +1160,16 @@ object F_Hitsugaya: TF_Hitsugaya
     Color = 12582911
     Ctl3D = True
     DoubleBuffered = True
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ItemHeight = 13
     ParentBiDiMode = False
     ParentCtl3D = False
     ParentDoubleBuffered = False
+    ParentFont = False
     TabOrder = 6
     OnClick = LB_CandidatesClick
   end
@@ -1360,10 +1388,10 @@ object F_Hitsugaya: TF_Hitsugaya
     BlendColor = clBtnFace
     BkColor = 15790320
     DrawingStyle = dsTransparent
-    Left = 25
+    Left = 105
     Top = 10
     Bitmap = {
-      494C01010600A000680010001000F0F0F000FF10FFFFFFFFFFFFFFFF424D3600
+      494C01010600A000780010001000F0F0F000FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000008F50001099610032965A002200000000000000000000
@@ -1636,7 +1664,7 @@ object F_Hitsugaya: TF_Hitsugaya
   end
   object XMLConfig: TXMLDocument
     Options = [doNodeAutoCreate, doNodeAutoIndent, doAttrNull, doAutoPrefix, doNamespaceDecl]
-    Left = 375
+    Left = 295
     Top = 10
     DOMVendorDesc = 'MSXML'
   end

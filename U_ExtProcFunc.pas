@@ -4,13 +4,33 @@ interface
 
 uses Windows, Dialogs, SysUtils, StdCtrls, U_Classes;
 
-type SWList = array of THitSoft;
+type
+  SWList = array of THitSoft;
+  WinIsWow64 = function(Handle: THandle; var Iret: BOOL): Windows.BOOL; stdcall;
 
+function GetExBits: string;
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
 procedure CreateFreeDriveList(var CB_Drives: TComboBox);
 procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
 
 implementation
+
+// Check if the OS is x86 or x64
+function GetExBits: string;
+var
+  HandleTo64BitsProcess: WinIsWow64;
+  Iret                 : Windows.BOOL;
+begin
+  Result := 'x86';
+  HandleTo64BitsProcess := GetProcAddress(GetModuleHandle('kernel32.dll'), 'IsWow64Process');
+  if Assigned(HandleTo64BitsProcess) then
+  begin
+    if not HandleTo64BitsProcess(GetCurrentProcess, Iret) then
+      Raise Exception.Create('Invalid handle');
+    if Iret then
+      Result := 'x64';
+  end;
+end;
 
 // Create available software list
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
@@ -26,9 +46,13 @@ begin
     Test:= THitSoft.Create(Res.Name, Result);
     if Test.IsValid then
       begin
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1]:= Test;
-        LB_Soft.Items.Add(Test.Name);
+        if (Pos(GetExBits, Test.Name) <> 0) or
+          ((Pos('x86', Test.Name) = 0) and (Pos('x64', Test.Name) = 0)) then
+        begin
+          SetLength(Result, Length(Result) + 1);
+          Result[Length(Result) - 1]:= Test;
+          LB_Soft.Items.Add(Test.Name);
+        end;
       end
     else
       MessageDlg('Formato del file ' + Res.Name + ' invalido', mtWarning, [mbOK], 0);

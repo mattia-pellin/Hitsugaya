@@ -36,6 +36,7 @@ type
     CB_Mapping_WSUS: TCheckBox;
     CB_Drive_WSUS: TComboBox;
     CB_Reboot: TCheckBox;
+    L_Bits: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
@@ -178,10 +179,12 @@ begin
   then
     begin
       MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
-      Exit;
+      Application.Terminate;
     end;
   FindClose(res);
 
+  // Search for x64 or x86 compatibility
+  L_Bits.Caption:= GetExBits;
   // Load images into components
   LoadIcons();
   // Create available drives list for mapping
@@ -422,7 +425,8 @@ begin
         sFile.Free;
 
         CopyFile(pChar(OD_Update.FileName), pChar(FilePath + NewFileName), True);
-        DeleteFile(FilePath + OldFileName);
+        if NewFileName <> OldFileName then
+          DeleteFile(FilePath + OldFileName);
 
         // Rebuild software list
         SwList:= BuildSoftwareList(LB_Software);
