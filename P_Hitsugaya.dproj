@@ -48,6 +48,9 @@
 			<DelphiCompile Include="P_Hitsugaya.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
+			<DCCReference Include="U_Loading.pas">
+				<Form>F_Loading</Form>
+			</DCCReference>
 			<DCCReference Include="U_Hitsugaya.pas">
 				<Form>F_Hitsugaya</Form>
 			</DCCReference>
@@ -77,9 +80,9 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
-						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="MinorVer">1</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">423</VersionInfo>
+						<VersionInfo Name="Build">426</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -91,7 +94,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Informatica Bassanese Servizi</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">Hitsugaya Installer</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.0.0.423</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.1.0.426</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Hitsugaya</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright"/>
 						<VersionInfoKeys Name="LegalTrademarks"/>

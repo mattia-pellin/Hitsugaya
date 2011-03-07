@@ -10,10 +10,21 @@ type
 
 function GetExBits: string;
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
+procedure UpdateLoading(Step: String);
 procedure CreateFreeDriveList(var CB_Drives: TComboBox);
 procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
 
 implementation
+
+uses U_Loading;
+
+// Update loading progress
+procedure UpdateLoading(Step: string);
+begin
+  F_Loading.L_Loading.Caption:= Step;
+  F_Loading.PB_Loading.Position:= 0;
+  F_Loading.Refresh;
+end;
 
 // Check if the OS is x86 or x64
 function GetExBits: string;
@@ -32,14 +43,35 @@ begin
   end;
 end;
 
+// Returns a counter for specified files type and directory
+function GetFilesCount(Folder, WildCard: string): Word;
+var
+  intFound: Integer;
+  SearchRec: TSearchRec;
+begin
+  Result := 0;
+  if (Folder <> '') and (Folder[Length(Folder)] <> '\') then
+    Folder := Folder + '\';
+  intFound := FindFirst(Folder + WildCard, faAnyFile, SearchRec);
+  while (intFound = 0) do
+  begin
+    if not (SearchRec.Attr and faDirectory = faDirectory) then
+      Inc(Result);
+    intFound := FindNext(SearchRec);
+  end;
+  FindClose(SearchRec);
+end;
+
 // Create available software list
 function BuildSoftwareList(var LB_Soft: TListBox): SWList;
 var
     Res:      TSearchRec;
     Test:     THitSoft;
+    Step:     Byte;
 begin
   SetLength(Result, 0);
   LB_Soft.Items.Clear;
+  Step:= 100 div GetFilesCount('config\', '*.bat');
   FindFirst('config\*.bat', faAnyFile, Res);
 
   repeat
@@ -56,23 +88,35 @@ begin
       end
     else
       MessageDlg('Formato del file ' + Res.Name + ' invalido', mtWarning, [mbOK], 0);
+    F_Loading.PB_Loading.Position:= F_Loading.PB_Loading.Position + Step;
   until FindNext(Res) <> 0;
   FindClose(Res);
+
+  F_Loading.PB_Loading.Position:= 100;
 end;
 
 // Create available catagory list
 procedure BuildCategoryList(var Software: SWList; var Categories: TComboBox);
-var i: Integer;
+var i:      SmallInt;
+    Step:   Byte;
 begin
+  Step:= 100 div (Length(Software) + 1);
+
   Categories.Items.Clear;
   Categories.Items.Add('Tutte le Categorie');
+  F_Loading.PB_Loading.Position:= F_Loading.PB_Loading.Position + Step;
 
   for i := 0 to Length(Software) - 1 do
-    if Categories.Items.IndexOf(Software[i].Category) = -1 then
-      Categories.Items.Add(Software[i].Category);
+    begin
+      if Categories.Items.IndexOf(Software[i].Category) = -1 then
+        Categories.Items.Add(Software[i].Category);
+      F_Loading.PB_Loading.Position:= F_Loading.PB_Loading.Position + Step;
+    end;
 
   if Categories.Items.Count > 0 then
     Categories.ItemIndex:= 0;
+
+  F_Loading.PB_Loading.Position:= 100;
 end;
 
 // Put free drive list into ComboBox

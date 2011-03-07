@@ -5,8 +5,8 @@ interface
 uses
   Windows, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, Buttons, ShellApi, StrUtils,
-  ImgList, XMLDoc, XMLIntf, jpeg, xmldom, msxmldom, U_Classes, U_ExtProcFunc,
-  CheckLst;
+  ImgList, XMLDoc, XMLIntf, jpeg, xmldom, msxmldom, CheckLst,
+  U_Classes, U_ExtProcFunc;
 
 type
     TF_Hitsugaya = class(TForm)
@@ -37,7 +37,6 @@ type
     CB_Drive_WSUS: TComboBox;
     CB_Reboot: TCheckBox;
     L_Bits: TLabel;
-    procedure FormCreate(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
     procedure B_RemoveClick(Sender: TObject);
     procedure B_UpClick(Sender: TObject);
@@ -50,10 +49,13 @@ type
     procedure CB_CategoryKeyPress(Sender: TObject; var Key: Char);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure B_UpdateClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
+    SwList: U_ExtProcFunc.SWList;
   end;
 
 const
@@ -61,27 +63,15 @@ const
 
 var
   F_Hitsugaya: TF_Hitsugaya;
-  SwList:      U_ExtProcFunc.SWList;
 
 implementation
+
+uses U_Loading;
 
 {$R *.dfm}
 
 // PROCEDURES & FUNCTIONS
 // -----------------------------------------------------------------------------
-procedure LoadIcons();
-begin
-  with F_Hitsugaya do
-  begin
-    IL_Hitsugaya.GetBitmap(0, B_Add.Glyph);
-    IL_Hitsugaya.GetBitmap(1, B_Remove.Glyph);
-    IL_Hitsugaya.GetBitmap(2, B_Up.Glyph);
-    IL_Hitsugaya.GetBitmap(3, B_Down.Glyph);
-    IL_Hitsugaya.GetBitmap(4, B_Info.Glyph);
-    IL_Hitsugaya.GetBitmap(5, B_Update.Glyph);
-  end;
-end;
-
 procedure SaveCurrentConfig(const FileName: String);
 var
     i:                  Integer;
@@ -162,73 +152,6 @@ begin
     end;
   end;
   // ----------
-end;
-// -----------------------------------------------------------------------------
-
-
-
-// INITIAL SETTINGS
-// -----------------------------------------------------------------------------
-procedure TF_Hitsugaya.FormCreate(Sender: TObject);
-var Res: TSearchRec;
-begin
-  // Checking software availability
-  if (FindFirst(SW_PATH + '*.bat', faAnyFile, Res) <> 0)
-      or
-      not(DirectoryExists(SW_PATH))
-  then
-    begin
-      MessageDlg('Nessun Software trovato', mtWarning, [mbOK], 0);
-      Application.Terminate;
-    end;
-  FindClose(res);
-
-  // Search for x64 or x86 compatibility
-  L_Bits.Caption:= GetExBits;
-  // Load images into components
-  LoadIcons();
-  // Create available drives list for mapping
-  CreateFreeDriveList(CB_Drive);
-  CB_Drive_WSUS.Items:= CB_Drive.Items;
-  if CB_Drive_WSUS.Items.IndexOf('W:') = -1 then
-    CB_Drive_WSUS.ItemIndex:= CB_Drive_WSUS.Items.Count - 2
-  else
-    CB_Drive_WSUS.ItemIndex:= CB_Drive_WSUS.Items.IndexOf('W:');
-  // Build available software list
-  SwList:= BuildSoftwareList(LB_Software);
-  // Build available categories list
-  BuildCategoryList(SwList, CB_Category);
-  // Set user desktop as default update directory
-  OD_Update.InitialDir:= GetEnvironmentVariable('HOMEPATH') + '\Desktop';
-  // Show executing path
-  E_Path.Text:= GetCurrentDir();
-  E_Path_WSUS.Text:= LeftStr(E_Path.Text, LastDelimiter('\', E_Path.Text));
-  E_Path_WSUS.Text:= E_Path_WSUS.Text + 'WSUSoffline';
-  if E_Path.Text[1] = '\' then
-    CB_Mapping.Checked:= True;
-
-  if LB_Software.Count > 0 then
-  begin
-    LB_Software.ItemIndex:= 0;
-    B_Add.Enabled:= True;
-  end;
-end;
-// -----------------------------------------------------------------------------
-
-
-
-// FINAL OPERATIONS
-// -----------------------------------------------------------------------------
-procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
-var vFile: TextFile;
-begin
-  if FileExists('P_Hitsugaya.exe') then
-  begin
-    AssignFile(vFile, 'version');
-    Rewrite(vFile);
-    Write(vFile, GetFileVer('P_Hitsugaya.exe'));
-    CloseFile(vFile);
-  end;
 end;
 // -----------------------------------------------------------------------------
 
@@ -479,7 +402,8 @@ begin
                      'F3: Salva in XML la configurazione per Aziende' + #13#10 +
                      'F4: Salva in XML la configurazione per Privati' + #13#10 +
                      'F7: Carica in XML la configurazione per Aziende' + #13#10 +
-                     'F8: Carica in XML la configurazione per Privati');
+                     'F8: Carica in XML la configurazione per Privati' + #13#10 +
+                     'F10: Compila ed Esegue i comandi selezionati');
     114: begin
             SaveCurrentConfig('business.xml');
             MessageDlg('Configurazione per Aziende salvata', mtInformation, [mbOK], 0);
@@ -496,11 +420,16 @@ begin
             LoadConfig('home.xml');
             MessageDlg('Configurazione per Privati caricata', mtInformation, [mbOK], 0);
          end;
+    121: B_StartClick(Sender);
   end;
 
   LB_CandidatesClick(Sender);
 end;
 
+procedure TF_Hitsugaya.FormShow(Sender: TObject);
+begin
+  F_Loading.Close;
+end;
 
 procedure TF_Hitsugaya.LB_CandidatesClick(Sender: TObject);
 begin
@@ -681,5 +610,26 @@ begin
 end;
 // -----------------------------------------------------------------------------
 
+
+
+// FINAL OPERATIONS
+// -----------------------------------------------------------------------------
+procedure TF_Hitsugaya.FormClose(Sender: TObject; var Action: TCloseAction);
+var vFile: TextFile;
+begin
+  if FileExists('P_Hitsugaya.exe') then
+  begin
+    AssignFile(vFile, 'version');
+    Rewrite(vFile);
+    Write(vFile, GetFileVer('P_Hitsugaya.exe'));
+    CloseFile(vFile);
+  end;
+end;
+
+procedure TF_Hitsugaya.FormCreate(Sender: TObject);
+begin
+end;
+
+// -----------------------------------------------------------------------------
 
 end.
